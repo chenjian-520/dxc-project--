@@ -1,0 +1,12 @@
+package com.example.test;
+
+public class Snippet {
+	public static void main(String[] args) {
+		import org.springframework.boot.SpringApplication;
+		import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+		import org.springframework.boot.autoconfigure.SpringBootApplication;
+		import org.springframework.context.annotation.ComponentScan;
+		import org.springframework.context.annotation.Configuration;
+	}
+}
+

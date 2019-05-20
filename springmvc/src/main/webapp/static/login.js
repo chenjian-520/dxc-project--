@@ -1,0 +1,1 @@
+window.local.herf="/student/user.do"

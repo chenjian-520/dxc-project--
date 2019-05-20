@@ -1,0 +1,14 @@
+template: Hello, %s!
+ 
+defaultName: ${DW_DEFAULT_NAME:-Stranger}
+ 
+cometdServletInfo:
+  servletClass: com.zte.ums.zenap.itm.agent.cometd.server.CometdServlet
+  servletPath: /api/itmagentnotification/v1 
+server:
+   type: simple
+   rootPath: '/*'
+   applicationContextPath: /
+   connector:
+         type: http
+         port: 9090

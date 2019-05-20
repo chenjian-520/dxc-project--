@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mazh.ssm.mapper.PageviewsMapper">
+    <!-- 查询所有记录， 返回的是一个List<Student> -->
+    <select id="getAllPageviews" resultType="Pageviews">
+		select * from pageviews
+	</select>
+
+    <select id="getAllPageviewsWhere" resultType="Pageviews" parameterType="Pageviews">
+        select * from pageviews
+        <where>
+            <include refid="selectPageviewsWhere"></include>
+        </where>
+    </select>
+
+    <sql id="selectPageviewsWhere">
+        <if test="session != null and session != ''">
+            and session = #{session}
+        </if>
+        <if test="key1 != null and key1 != ''">
+            and key1 = #{key1}
+        </if>
+        <if test="remote_addr != null and remote_addr != ''">
+            and remote_addr = #{remote_addr}
+        </if>
+        <if test="timestr != null and timestr != ''">
+            and timestr = #{timestr}
+        </if>
+        <if test="tequest != null and tequest != ''">
+            and tequest = #{tequest}
+        </if>
+        <if test="step != 0 ">
+            and step = #{step}
+        </if>
+        <if test="staylong != 0 ">
+            and staylong = #{staylong}
+        </if>
+        <if test="referal != null and referal != ''">
+            and referal = #{referal}
+        </if>
+        <if test="useragent != null and useragent != ''">
+            and useragent = #{useragent}
+        </if>
+        <if test="bytes_send != null and bytes_send != ''">
+            and bytes_send = #{bytes_send}
+        </if>
+        <if test="status != null and status != ''">
+            and status = #{status}
+        </if>
+    </sql>
+
+    <!-- 查询一个学生 -->
+    <select id="getOnePageviews" parameterType="String" resultType="Pageviews">
+		select * from pageviews where session = #{session}
+	</select>
+
+    <!-- 插入一个学生记录 -->
+    <insert id="insertPageviews" parameterType="Pageviews">
+		insert into pageviews
+		(session, key1, remote_addr, timestr,tequest,step,staylong,referal,useragent,bytes_send,status)
+		 values (#{session}, #{key1}, #{remote_addr},#{timestr},#{tequest},#{step},#{staylong},
+		 #{referal},#{useragent},#{bytes_send},#{status})
+	</insert>
+
+    <!-- 修改一个学生记录 -->
+    <update id="updatePageviews" parameterType="Pageviews">
+		update pageviews set session
+		= #{session}, key1 = #{key1}, remote_addr = #{remote_addr},
+		 timestr = #{timestr},tequest = #{tequest},step = #{step},
+		 staylong = #{staylong},referal = #{referal},useragent = #{useragent},
+		 bytes_send = #{bytes_send},status = #{status}
+		where session = #{session}
+	</update>
+
+    <!-- 删除一个学生记录 -->
+    <delete id="deletePageviews" parameterType="String">
+		delete from pageviews
+		where session = #{session}
+	</delete>
+</mapper>

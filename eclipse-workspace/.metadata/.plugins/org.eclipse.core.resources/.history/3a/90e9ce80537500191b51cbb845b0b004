@@ -1,0 +1,165 @@
+<#-- @ftlvariable name="doc" type="java.util.Map" -->
+<#-- @ftlvariable name="message" type="java.util.Map" -->
+
+<#if (message.orderInfo.entityType)?? && message.orderInfo.entityType?trim?lower_case=="server">
+
+<#assign ORDER_STATE_MAPPING =
+    {
+        "UNKNOWN" : "in_progress",
+        "BUILD" : "in_progress",
+        "LAPSED" : "in_progress", 
+        "ACTIVE" : "completed",
+        "ERROR" : "failed",
+        "DELETE_IN_PROGRESS" : "completed",
+        "DELETE IN PROGRESS" : "completed",
+        "DELETED" : "completed"
+    }
+/>
+
+<#assign SUB_STATE_MAPPING =
+    {
+        "UNKNOWN" : "pending",
+        "BUILD" : "pending",
+        "LAPSED" : "pending", 
+        "ACTIVE" : "active",
+        "ERROR" : "terminated",
+        "DELETE_IN_PROGRESS" : "cancelling",
+        "DELETE IN PROGRESS" : "cancelling",
+        "DELETED" : "cancelled"
+    }
+/>
+
+<#assign serverStatus = (message.fullEntity.status)!"DELETED" />
+<#assign orderState = ORDER_STATE_MAPPING[serverStatus] />
+<#assign subState = SUB_STATE_MAPPING[serverStatus] />
+
+<#escape x as x?json_string>
+{
+    "orderInfo": {
+        "state": "${orderState}",
+        "subscription": {
+            "state": "${subState}"
+            <#if (message.fullEntity.created)??>
+                , "startDate": "${message.fullEntity.created}"
+            </#if>
+            <#if serverStatus == "DELETED">
+                , "serviceInstanceId": null
+            </#if>
+        }
+    }
+}
+</#escape>
+
+<#elseif (message.orderInfo.entityType)?? && message.orderInfo.entityType?trim?lower_case=="storage">
+
+<#assign ORDER_VOLUME_STATE_MAPPING =
+    {
+        "CREATE" : "submitted",
+        "CREATING" : "in_progress",
+        "AVAILABLE" : "completed",
+        "ACTIVE" : "completed",
+        "GROWING" : "completed",
+        "GROW" : "completed",
+        "DELETE" : "completed",
+        "DELETING" : "completed",
+        "DELETED" : "completed",
+        "ERROR" : "failed",
+        "UNKNOWN" : "submitted"
+    }
+/>
+
+<#assign SUB_VOLUME_STATE_MAPPING =
+    {
+        "CREATE" : "pending",
+        "CREATING" : "pending",
+        "AVAILABLE" : "active",
+        "ACTIVE" : "active",
+        "GROWING" : "active",
+        "GROW" : "active",
+        "DELETE" : "active",
+        "DELETING" : "active",
+        "DELETED" : "cancelled",
+        "ERROR" : "terminated",
+        "UNKNOWN" : "submitted"
+    }
+/>
+
+<#assign orderState = ORDER_VOLUME_STATE_MAPPING[message.fullEntity.status] />
+<#assign subState = SUB_VOLUME_STATE_MAPPING[message.fullEntity.status] />
+
+<#escape x as x?json_string>
+{
+    "orderInfo": {
+        "state": "${orderState}",
+        "subscription": {
+            "state": "${subState}"
+            <#if (message.fullEntity.created_at)??>
+            ,"startDate": "${message.fullEntity.created_at}"
+            </#if>
+        }
+    }
+}
+</#escape>
+
+<#elseif (message.orderInfo.entityType)?? && message.orderInfo.entityType?trim?lower_case=="oscluster">
+
+<#assign ORDER_OSCLUSTER_STATE_MAPPING =
+    {
+        "QUEUED" : "in_progress",
+        "BUILD" : "in_progress",
+        "ACTIVATION_READY" : "in_progress",
+        "IS_CREATING_VOLUME" : "in_progress",
+        "TICKETING" : "in_progress",
+        "CANCELLED" : "in_progress",
+        "TICKET_CLOSED" : "in_progress",
+        "TICKET_EXPIRED" : "failed",
+        "TICKET_FAILED" : "failed",
+        "ACTIVATING" : "in_progress",
+        "ACTIVE" : "completed",
+        "DEACTIVATION_READY" : "completed",
+        "TEARDOWN" : "completed",
+        "DELETED" : "completed"
+    }
+/>
+
+<#assign SUB_OSCLUSTER_STATE_MAPPING =
+    {
+        "QUEUED" : "pending",
+        "BUILD" : "pending",
+        "ACTIVATION_READY" : "pending",
+        "IS_CREATING_VOLUME" : "pending",
+        "TICKETING" : "pending",
+        "CANCELLED" : "pending",
+        "TICKET_CLOSED" : "pending",
+        "TICKET_EXPIRED" : "terminated",
+        "TICKET_FAILED" : "terminated",
+        "ACTIVATING" : "pending",
+        "ACTIVE" : "active",
+        "DEACTIVATION_READY" : "cancelling",
+        "TEARDOWN" : "cancelling",
+        "DELETED" : "cancelled"
+    }
+/>
+
+<#assign osClusterStatus = (message.fullEntity.status)!"DELETED" />
+<#assign orderState = ORDER_OSCLUSTER_STATE_MAPPING[message.fullEntity.status] />
+<#assign subState = SUB_OSCLUSTER_STATE_MAPPING[message.fullEntity.status] />
+
+<#escape x as x?json_string>
+{
+    "orderInfo": {
+        "state": "${orderState}",
+        "subscription": {
+            "state": "${subState}"
+            <#if (message.fullEntity.servers)??>
+            ,"startDate": "${message.fullEntity.servers[0].created}"
+            </#if>
+            <#if osClusterStatus == "DELETED">
+                , "serviceInstanceId": null
+            </#if>
+        }
+    }
+}
+</#escape>
+
+</#if>

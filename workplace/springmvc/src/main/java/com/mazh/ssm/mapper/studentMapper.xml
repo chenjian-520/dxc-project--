@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mazh.ssm.mapper.StudentMapper">
+
+	<!-- 查询所有记录， 返回的是一个List<Student> -->
+	<select id="getAllStudent" resultType="student">
+		select * from student
+	</select>
+
+	<select id="getAllStudentsWhere" resultType="student" parameterType="student">
+		select * from student
+		<where>
+			<include refid="selectStudentWhere"></include>
+		</where>
+	</select>
+
+	<sql id="selectStudentWhere">
+		<if test="name != null and name != ''">
+			and name = #{name}
+		</if>
+		<if test="sex != null and sex != ''">
+			and sex = #{sex}
+		</if>
+		<if test="age != 0">
+			and age = #{age}
+		</if>
+		<if test="department != null and department != ''">
+			and department = #{department}
+		</if>
+	</sql>
+
+	<!-- 查询一个学生 -->
+	<select id="getOneStudent" parameterType="int" resultType="student">
+		select * from student where id = #{id}
+	</select>
+
+	<!-- 插入一个学生记录 -->
+	<insert id="insertStudent" parameterType="student">
+		insert into student
+		(name, sex, age, department) values (#{name}, #{sex}, #{age},
+		#{department})
+	</insert>
+
+	<!-- 修改一个学生记录 -->
+	<update id="updateStudent" parameterType="student">
+		update student set name
+		= #{name}, sex = #{sex}, age = #{age}, department = #{department}
+		where id = #{id}
+	</update>
+
+	<!-- 删除一个学生记录 -->
+	<delete id="deleteStudent" parameterType="int">
+		delete from student
+		where id = #{id}
+	</delete>
+
+
+	<select id="groupByAge" resultMap="groupByAgeResultMap" >
+		select age, count(*) as total from student group by age
+	</select>
+	<resultMap id="groupByAgeResultMap" type="com.mazh.ssm.pojo.GroupAge" >
+		<result column="age" property="age" />
+		<result column="total" property="count" />
+	</resultMap>
+
+</mapper>

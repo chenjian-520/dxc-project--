@@ -1,0 +1,6 @@
+#Mon Mar 11 11:21:22 CST 2019
+__DEFAULT__=false
+org.eclipse.sdk.Eclipse.master=true
+org.eclipse.sdk.Google.master=true
+org.eclipse.help.ui.localSearch.master=true
+expression="org.springframework.jdbc.datasource.drivermanagerdatasource"

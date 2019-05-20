@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mapper.RoleMapper">
+
+    <!-- 单表查询info数据 -->
+    <select id="select_Role_All" resultType="RoleInfo">
+        select rid,rolename,level_1,uid from role ;
+    </select>
+    
+    <select id="select_Role_rid" resultType="RoleInfo" parameterType="int">
+    	select rid,rolename,level_1,uid from role where rid = #{rid};
+    </select>
+    
+    <select id="select_Role_uid" resultType="RoleInfo" parameterType="int">
+    	select rid,rolename,level_1,uid from role where uid = #{uid};
+    </select>
+    
+    <select id="select_Role_level" parameterType="int" resultType="int">
+    	select level_1 from role where rid = #{rid};
+    </select>
+    
+    <update id="update_Role_level">
+    	update role set level_1 = #{level_1} where rid = #{rid}
+    </update>
+    
+     <update id="updateAll" parameterType="RoleInfo">
+    	update role set rolename = #{rolename},level_1 = #{level_1},uid = #{uid} where rid = #{rid}
+    </update> 
+    
+    <insert id="insert_Role" parameterType="RoleInfo">
+    	insert into role(rid,rolename,level_1,uid) value(#{rid},#{rolename},#{level_1},#{uid});
+    </insert>
+
+    <delete id="delete_Role" parameterType="int">
+    	delete from role where rid = #{rid};
+    </delete>
+    
+    <select id="getAllWhere" resultType="RoleInfo" parameterType="RoleInfo">
+		select rid,rolename,level_1,uid from role
+		<where>
+			<include refid="selectStudentWhere"></include>
+		</where>
+	</select>
+
+	<sql id="selectStudentWhere">
+		<if test="rid != null and rid != ''">
+			and rid = #{rid}
+		</if>
+		<if test="rolename != null and rolename != ''">
+			and rolename = #{rolename}
+		</if>
+		<if test="level_1 != null and level_1 != ''">
+			and level_1 = #{level_1}
+		</if>
+		<if test="uid != null and uid != ''">
+			and uid = #{uid}
+		</if>
+	</sql>
+    
+</mapper>

@@ -1,0 +1,11 @@
+template: Hello, %s!
+ 
+defaultName: ${DW_DEFAULT_NAME:-Stranger}
+ 
+server:
+   type: simple
+   rootPath: '/*'
+   applicationContextPath: /
+   connector:
+         type: http
+         port: 9090

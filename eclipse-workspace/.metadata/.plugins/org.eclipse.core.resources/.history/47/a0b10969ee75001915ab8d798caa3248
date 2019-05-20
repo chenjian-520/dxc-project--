@@ -1,0 +1,66 @@
+<#-- @ftlvariable name="message" type="java.util.Map" -->
+<#-- @ftlvariable name="doc" type="java.util.Map" -->
+<#assign writeJson='com.hp.ccue.serviceExchange.adapter.freemarker.WriteJson'?new()/>
+<#assign serverType="physicalServer"/>
+<#if message.items[0].id??>
+    <#assign serverType=message.items[0].id/>
+</#if>
+<#escape x as x?json_string>
+{
+    "orderInfo": {
+        "id": "${doc.result.osCluster.id}",
+        "entityType": "osCluster",
+        "serverType": "${serverType}",
+        "dataCenter": "${message.authDataCenter}",
+        "subscription": {
+            "subscriptionId": "${doc.result.osCluster.id}",
+            "serviceInstanceId": "${doc.result.osCluster.id}"
+        },
+        "status": "${doc.result.osCluster.status}",
+        "created_at": "${doc.result.osCluster.servers[0].created}",
+        <#if message.propertyMap.storageNum??>
+        "volume": {
+        	"storageNum": "${message.propertyMap.storageNum}",
+        	"storageType": "${message.propertyMap.storageType}",
+        	<#list 1..message.propertyMap.storageNum?number as x>
+        	<#assign storageOffering = ("message.propertyMap.storageOffering_"+x)?eval>
+        	<#assign storageSize = ("message.propertyMap.storageSize_"+x)?eval>
+        	<#assign storageName = ("message.propertyMap.storageName_"+x)?eval>
+	            "storageOffering_${x}": "${storageOffering}",
+	            "storageSize_${x}": "${storageSize}",
+	            "storageName_${x}": "${storageName}"
+	        	<#if x_has_next>,</#if>
+	        </#list>
+        },
+        </#if>
+        "ticket": {
+            "customer": "${doc.result.osCluster.tenantName}",
+            "clusterLocation": "${message.propertyMap.mpcDatacenter}",
+            "clusterName": "${message.propertyMap.v2OSClusterName}",
+            "vlan": "${message.propertyMap.mpcVlan}",
+            "mpcHPEProvidedLicense": "${message.propertyMap.mpcHPEProvidedLicense}",
+            "mpcOsClusterSpanBoth": "${message.propertyMap.mpcOsClusterSpanBoth}",
+            "mpcImage": "${message.propertyMap.mpcImage}",
+            "osClusterSla": "${message.propertyMap.osClusterSla}",
+            <#if message.propertyMap.mpcItemInPrimary?? && message.propertyMap.mpcItemInPrimary?is_sequence>
+            "mpcItemInPrimary": [<#list message.propertyMap.mpcItemInPrimary as item>"${item}"<#if item_has_next>,</#if></#list>],
+            </#if>
+            <#if message.propertyMap.mpcItemInSecondary?? && message.propertyMap.mpcItemInSecondary?is_sequence>
+            "mpcItemInSecondary": [<#list message.propertyMap.mpcItemInSecondary as item>"${item}"<#if item_has_next>,</#if></#list>],
+            </#if>
+			<#if message.propertyMap.storageNum??>
+				"storageType": "${message.propertyMap.storageType}",
+	        	<#list 1..message.propertyMap.storageNum?number as x>       	
+		            "storageOffering_${x}": "${message.propertyMap["storageOffering_"+x]}",
+		            "storageSize_${x}": "${message.propertyMap["storageSize_"+x]}",
+		            "storageName_${x}": "${message.propertyMap["storageName_"+x]}"
+			        <#if x_has_next>,</#if>
+		        </#list>
+			</#if>
+        }
+    },
+    "entity": <#noescape>${writeJson(doc.result.osCluster)}</#noescape>,
+    "osCluster": <#noescape>${writeJson(doc.result.osCluster)}</#noescape>
+}
+</#escape>
+

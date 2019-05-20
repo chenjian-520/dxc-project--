@@ -1,0 +1,1852 @@
+<#-- @ftlvariable name="doc" type="java.util.Map" -->
+<#-- @ftlvariable name="message" type="java.util.Map" -->
+<#-- @ftlvariable name="writeJson" type="com.hp.ccue.serviceExchange.adapter.freemarker.WriteJson" -->
+<#-- @ftlvariable name="interruptCachingEnabled" type="com.hp.ccue.serviceExchange.adapter.mpc.freemarker.InterruptCachingEnabled" -->
+<#-- @ftlvariable name="executeOperation" type="com.hp.ccue.serviceExchange.operation.freemarker.OperationExecutingFunction" -->
+
+<#import "../utils.ftl" as utils/>
+<#import "../vpcImageUtilftl.ftl" as imageUtils />
+
+<#include "../mpcUtils.ftl" />
+
+<#--
+<#include "../datacenterUtils.ftl" />
+-->
+
+<#assign messageHeader = message.messageHeader/>
+<#assign interruptCachingEnabled = "com.hp.ccue.serviceExchange.adapter.mpc.freemarker.InterruptCachingEnabled"?new()/>
+
+<#escape x as x?json_string>
+
+<#assign rwSnapshotTypeList = []>
+<#assign roSnapshotTypeList = []>
+
+<#if ((message.orderInfo.entityType == "server" && message.serverInfo.flavorType == "Physical" && message.serverInfo.status == "ACTIVE"))
+    || (message.orderInfo.entityType == "storage" && message.orderInfo.storageType == "physical" && message.entity.snapshots?size &gt; 0)>
+    <#assign physicalVolumeTypes = executeOperation("getVolumeType",{"storageType":"physical"})>
+    <#list physicalVolumeTypes.volumeTypes as volumeType>
+        <#if volumeType.copyType == 'SNAPSHOT'>
+            <#if volumeType.readOnly == false>
+                <#assign rwSnapshotTypeList = rwSnapshotTypeList + [volumeType.id]>
+            <#else>
+                <#assign roSnapshotTypeList = roSnapshotTypeList + [volumeType.id]>
+            </#if>
+        </#if>
+    </#list>
+</#if>
+
+<#if message.orderInfo.entityType == "server">
+
+<#assign SERVER_TO_INST_STATE_MAPPING =
+    {
+        "UNKNOWN" : "PENDING",
+        "BUILD" : "PENDING",
+        "LAPSED" : "PENDING",
+        "ACTIVE" : "ACTIVE",
+        "ERROR" : "TERMINATED",
+        "DELETE_IN_PROGRESS" : "CANCELLING",
+        "DELETE IN PROGRESS" : "CANCELLING",
+        "DELETED" : "CANCELLED"
+    }
+/>
+
+<#function getServerIcon flavorType osType applianceType>
+    <#--osType: "RHEL (Linux)", "SUSE (Linux)", "Windows EE", "Windows SE", "Windows"-->
+    <#local osPart = "">
+    <#if osType?contains("RHEL")>
+        <#local osPart = "_redhat">
+    <#elseif osType?contains("SUSE")>
+        <#local osPart = "_suse">
+    <#elseif osType?contains("Windows")>
+        <#local osPart = "_windows">
+    </#if>
+    <#local virtualPart = (flavorType == "Virtual")?string("_v_v170322", "_p_v170322")>
+    <#if osType?contains("VA Image") || applianceType?contains("virtualAppliance")>
+        <#return "virtual_appliance_v180911.png">
+    <#else>
+        <#return "server${osPart}${virtualPart}.png">
+    </#if>
+</#function>
+
+<#assign server = message.serverInfo />
+<#assign hasSnapshot = false />
+<#if message.entity?has_content && message.entity.backupEnabled?has_content>
+<#assign backupEnabled = message.entity.backupEnabled>
+</#if>
+
+<#-- Returns true if the VM is Hyper-V VM; otherwise, returns false. -->
+<#function isHyperVVirtualMachine>
+	<#if (message.serverInfo)??
+		&& message.serverInfo.hypervisor?has_content
+		&& message.serverInfo.hypervisor?trim?lower_case == "hyper-v">
+		<#return true />
+	</#if>
+
+	<#return false />
+</#function>
+
+<#function serverSubStatusIsUP>
+	<#if server.subStatus?has_content && (server.subStatus == "UP" || server.subStatus == "ON")>
+		<#return true />
+	</#if>
+	<#return false />
+</#function>
+
+<#if !server?? || !server.name??>
+{
+    "entity": {
+        "summary": {
+            "state": "CANCELLED"
+        }
+    }
+}
+<#else>
+{
+    "entity": {
+        "summary": {
+            "name": "${server.name}",
+            "owner": "${message.orderInfo.propelUserId}",
+            "state": "${SERVER_TO_INST_STATE_MAPPING[server.status]}",
+            "substate": "${server.status}",
+            "creationRequestIdInSupplier": "${message.supplierEntityId}"
+        },
+        "components": [
+            {
+                "id": "${message.supplierEntityId}",
+                <#if server.name?has_content>
+                "name": <@utils.fallbackL10nField server.name />,
+                </#if>
+                "description": <@utils.fallbackL10nField server.name />,
+                "iconInSupplier": "${getServerIcon(server.flavorType, server.osType, server.applianceType)}",
+                "state": {
+                    "en": "${server.status?lower_case?cap_first}<#if server.subStatus?has_content && server.status?lower_case != "delete in progress"> / ${server.subStatus?lower_case?cap_first}</#if><#if server.progress?has_content && (server.status?lower_case == "build" || server.status?lower_case == "delete in progress")> (${server.progress}%)</#if>"
+                },
+                "properties": {
+                    "fields": [
+                       <#if (message.orderInfo)?? && message.orderInfo.dataCenter?has_content>
+                            {
+                                "id": "datacenter",
+                                <#if server.flavorType?has_content && server.flavorType == "Virtual">
+                                "name": <@utils.fallbackL10nField fallbackString="Virtual Machine Location" />,
+                                <#elseif server.flavorType?has_content>
+                                "name": <@utils.fallbackL10nField fallbackString="Physical Server Location" />,
+                                <#else>
+                                "name": <@utils.fallbackL10nField fallbackString="Datacenter" />,
+                                </#if>
+                                "type": "TEXT_INPUT",
+                                "value": "${message.orderInfo.dataCenter}"
+                                <#--"value": "${getDataCenterDisplayName(message.orderInfo.dataCenter, isSecondaryDC(server.flavorName))}"-->
+                            },
+                        </#if>
+                        <#if (message.orderInfo)?? && message.orderInfo.compartment?has_content>
+                        {
+                            "id": "compartment",
+                            "name": <@utils.fallbackL10nField fallbackString="Compartment Name" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${message.orderInfo.compartment}"
+                        },
+                        </#if>
+                        <#if server.publicIp?has_content>
+                            {
+                                "id": "publicIp",
+                                "name": <@utils.fallbackL10nField fallbackString="DXC Provided Public IP Address" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${server.publicIp}"
+                            },
+                        </#if>
+                        <#if server.privateIp?has_content>
+                            {
+                                "id": "privateIp",
+                                "name": <@utils.fallbackL10nField fallbackString="Private IP" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${server.privateIp}"
+                            },
+                        </#if>
+                        <#if (message.orderInfo.updatedTicketId)?has_content>
+                        {
+                        	"id": "updated_TicketId",
+                        	"name": "Updated TicketId For Virtual Appliance",
+                        	"type": "TEXT_INPUT",
+                        	"value": "${message.orderInfo.updatedTicketId}"
+                        },
+                        </#if>
+                        {
+                            "id": "userId",
+                            "name": <@utils.fallbackL10nField fallbackString="User ID" />,
+                            "type": "TEXT_INPUT",
+                            "value": <#if server.userId?has_content>"${server.userId}"<#elseif server.managementType == "Client" && server.osType?contains("Linux")>"root"<#elseif server.managementType == "Client" && !server.osType?contains("Linux") >"customer-admin"<#else>"customer-user"</#if>
+                        },
+                        {
+                            "id": "imageDisplayName",
+                            "name": <@utils.fallbackL10nField fallbackString="Image Name" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.imageDisplayName}"
+                        },
+                        <#if !(server.osType?contains("VA Image") || server.applianceType?contains("virtualAppliance"))>
+                        {
+                            "id": "isbackupEnabled",
+                            "name": <@utils.fallbackL10nField fallbackString="Backup Enabled" />,
+                            "type": "TEXT_INPUT",
+                            "value": <#if backupEnabled?has_content>"${backupEnabled?c}"<#else>""</#if>
+                        },
+                        </#if>
+                        <#if server.fqdn?has_content>
+                        {
+                            "id": "fqdn",
+                            "name": <@utils.fallbackL10nField fallbackString="FQDN" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.fqdn}",
+                            "hidden": true
+                        },
+                        </#if>
+                        <#list server.attachedVolumes as vol>
+                        <#assign i = vol_index + 1>
+                        {
+                            "id": "volId${i}",
+                            "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Id" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${vol.id}"
+                        },
+                        {
+                            "id": "volName${i}",
+                            "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Name" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${vol.name}"
+                        },
+                        {
+                            "id": "volStatus${i}",
+                            "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Status" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${vol.status?lower_case?cap_first} / ${vol.attachmentStatus?lower_case?cap_first}"
+                        },
+                        {
+                            "id": "volSize${i}",
+                            "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Capacity [GiB]" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${vol.allocatedSize}"
+                        },
+                        {
+                            "id": "volType${i}",
+                            "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Block Storage Offering" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${vol.type}"
+                        },
+                        <#if vol.snapshots?has_content><#assign hasSnapshot = true /></#if>
+                        </#list>
+                        {
+                            "id": "managementType",
+                            "name": <@utils.fallbackL10nField fallbackString="Management Type" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${(server.managementType?lower_case == "client")?string("Client", "DXC")}"
+                        },
+                        <#if server.vlan?has_content>
+                        {
+                            "id": "vlan",
+                            "name": <@utils.fallbackL10nField fallbackString="VLAN" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.vlan}"
+                        },
+                        </#if>
+                        <#if server.flavorType?has_content>
+                        {
+                            "id": "flavorType",
+                            "name": <@utils.fallbackL10nField fallbackString="Flavor Type" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.flavorType}"
+                        },
+                        </#if>
+                        <#if server.sla?has_content>
+                        {
+                            "id": "sla",
+                            "name": <@utils.fallbackL10nField fallbackString="Service Level" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.sla}"
+                        },
+                        </#if>
+                        <#if server.size?has_content>
+                        {
+                            "id": "size",
+                            <#if server.flavorType?lower_case == "physical">
+                            "name": <@utils.fallbackL10nField fallbackString="Server Hardware" />,
+                            <#else>
+                            "name": <@utils.fallbackL10nField fallbackString="Machine Size" />,
+                            </#if>
+                            "type": "TEXT_INPUT",
+                            "value": "${server.size}"
+                        },
+                        </#if>
+                        <#if (message.serverInfo)?? && message.serverInfo.dedicatedHypervisorClusterName?has_content>
+                        {
+                            "id": "dedicatedHypervisorCluster",
+                            "name": <@utils.fallbackL10nField fallbackString="Dedicated Cluster" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${message.serverInfo.dedicatedHypervisorClusterName}"
+                        },
+                        </#if>
+						<#if message.evaVolumes??>
+                        	 <#list message.evaVolumes as evaVolume>
+		                        {
+		                            "id": "evaVolId${evaVolume_index + 1}",
+		                            "name": <@utils.fallbackL10nField fallbackString="EVA Volume #${evaVolume_index + 1} Id" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_ID?has_content>${evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_ID}<#else>""</#if>"
+		                        },
+		                        {
+		                            "id": "evaVolName${evaVolume_index + 1}",
+		                            "name": <@utils.fallbackL10nField fallbackString="EVA Volume #${evaVolume_index + 1} Name" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_NAME?has_content>${evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_NAME}<#else>""</#if>"
+		                           
+		                        },
+		                        {
+		                            "id": "evaVolStatus${evaVolume_index + 1}",
+		                            "name": <@utils.fallbackL10nField fallbackString="EVA Volume #${evaVolume_index + 1} Status" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_STATUS?has_content>${evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_STATUS}<#else>""</#if><#if evaVolume.unsubscribeTicket?? && evaVolume.unsubscribeTicket?has_content>${evaVolume.unsubscribeTicket}</#if>"		                            
+		                        },
+		                        {
+		                            "id": "evaVolSize${evaVolume_index + 1}",
+		                            "name": <@utils.fallbackL10nField fallbackString="EVA Volume #${evaVolume_index + 1} Capacity [GiB]" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_SIZE?has_content>${evaVolume.DXC_RESERVED_LEGACY_EVA_VOLUME_SIZE}<#else>""</#if>"
+		                            
+		                        },
+                        	</#list>
+                        </#if>
+                        {
+                            "id": "created",
+                            "name": <@utils.fallbackL10nField fallbackString="Created" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.created}"
+                        },
+                        {
+                            "id": "lastUpdated",
+                            "name": <@utils.fallbackL10nField fallbackString="Last Updated" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.updated}"
+                        }
+                    ]
+                },
+                "availableActions": [
+                	<#assign firstActionItem = true />
+                	
+                	<#if server.status == "ACTIVE">
+                		<#if !firstActionItem>,</#if>
+	                    <#if ((message.snapshot??) && !message.snapshot.discarded?? && !message.snapshot.committed??) && !server.locked>
+                            {
+                                "actionId": "refreshSnapshot",
+	                        	"name": "Auto Refresh Server Instance",
+	                        	"displayName": "Auto Refresh Server Instance Data",
+	                        	"description": "Auto Refresh the server instance data."
+                            }
+                    	<#else>
+		                    {
+		                        "actionId": "refreshInstance",
+		                        "name": "Refresh Server Instance",
+		                        "displayName": "Refresh Server Instance Data",
+		                        "description": "Refresh the server instance data."
+		                    }
+		                </#if>
+	                    <#assign firstActionItem = false />
+                    </#if>
+                    
+                    <#if server.status == "ACTIVE" && server.flavorType?lower_case == "physical" && message.evaVolumes?? && message.evaVolumes?size &gt; 0 && !server.locked>
+                		<#if !firstActionItem>,</#if>
+	                   {
+                            "actionId": "cancelEVAStorage",
+                            "name": <@utils.fallbackL10nField fallbackString="Unsubscribe the following EVA Storage" />,
+                            "description": <@utils.fallbackL10nField fallbackString="Detach the EVA storage from all servers it is attached, and terminate this EVA storage." />,
+                            "form": {
+                                "fields": [{
+                                    "id": "evaVolumeId",
+                                    "name": <@utils.fallbackL10nField fallbackString="EVA Volumes" />,
+                                    "type": "DROPDOWN_LIST",
+                                    "constraints": {
+                                        "multipleSelection": false,
+                                        "dynamicAvailableValues": {
+                                            "dataSourceId": "sxDataSource",
+                                            "parameters": {
+                                                "uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/evaVolumes'",
+                                                "serverId": "'${server.id}'",
+                                                "authDataCenter":"'${message.authDataCenter}'"
+                                                <#if (message.compartment)??>
+                                                ,"compartment" : "'${message.compartment}'"
+                                                </#if>
+                                            }
+                                        },
+                                        "requiredExpression": "true",
+                                        "editableExpression": "true"
+                                    }
+                                }]
+                            }
+                        }
+	                    <#assign firstActionItem = false />
+                    </#if>
+
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.discarded?? || message.snapshot.committed??) && server.flavorType == "Virtual" && (!isHyperVVirtualMachine()) && !server.locked>
+                        <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "resize",
+                            "name": <@utils.fallbackL10nField fallbackString="Resize Server" />,
+                            "description": <@utils.fallbackL10nField fallbackString="Change machine size to one of available machine sizes" />,
+                            "form": {
+                                "fields": [
+                                	{
+                                    	"id": "newCPUCount",
+                                    	"name": "CPU",
+                                    	"type": "DROPDOWN_LIST",
+                                    	"constraints": {
+                                        	"dynamicAvailableValues": {
+                                            	"dataSourceId": "sxDataSource",
+                                            	"parameters": {
+                                                	"uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/vmResizeCpu'",
+                                                	"serverId": "'${server.id}'",
+                                                	"authDataCenter":"'${message.authDataCenter}'",
+                                                	 "managementType": "'${server.managementType}'"
+                                                	<#if (message.compartment)??>
+                                                	,"compartment" : "'${message.compartment}'"
+                                                	</#if>                                                	
+                                            	}
+                                        	},
+                                        	"requiredExpression": "true"
+                                        }
+                                    },
+                                    {
+                                    	"id": "newMemorySize",
+                                    	"name": "Memory",
+                                    	"type": "DROPDOWN_LIST",
+                                    	"activeExpression": "newCPUCount.value",
+                                    	"constraints": {
+                                        	"dynamicAvailableValues": {
+                                            	"dataSourceId": "sxDataSource",
+                                            	"parameters": {
+                                                	"uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/vmResizeMemory'",
+                                                	"serverId": "'${server.id}'",
+                                                	"authDataCenter":"'${message.authDataCenter}'",
+                                                	"newCPUCount": "newCPUCount.value",
+                                                	"managementType": "'${server.managementType}'"
+                                                	<#if (message.compartment)??>
+                                                	,"compartment" : "'${message.compartment}'"
+                                                	</#if>
+                                            	}
+                                        	},
+                                        	"requiredExpression": "true"
+                                    	}
+                            		}
+                            	]
+                            }
+                        }
+                        <#assign firstActionItem = false>
+                    </#if>	
+					
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.discarded?? || message.snapshot.committed??) && (!isHyperVVirtualMachine()) && !server.locked>
+                    	<#assign hasAttachedVolume = false>
+                        <#assign hasAttachingVolume = false>
+
+                        <#list server.attachedVolumes as att>
+                            <#if att.attachmentStatus == "ATTACHED">
+                                <#assign hasAttachedVolume = true>
+                            </#if>
+                            <#if att.attachmentStatus?lower_case == "error">
+                                <#assign hasAttachedVolume = true>
+                            </#if>
+                            <#if att.attachmentStatus == "ATTACHING">
+	                            <#assign hasAttachingVolume = true>
+                            </#if>
+                            <#if hasAttachedVolume && hasAttachingVolume>
+                            	<#break>
+                            </#if>
+                        </#list>
+
+                        <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "attachStorage",
+                            "name": <#if server.flavorType == "Virtual">"Attach the following Block Storage Volume to this Server"<#else>"Attach the following Block Storage Volume(s) to this Server"</#if>,
+                            "description":  <#if server.flavorType == "Virtual" && hasAttachingVolume>"Cannot attach while another volume is attaching to this server."<#else>"Attaches an existing Block Storage Volume and/or associated R/W Snapshot Volumes to an existing Server"</#if>,
+                            "form": {
+                                "fields": [{
+                                    "id": "volumeId",
+                                    "name": <@utils.fallbackL10nField fallbackString="Volume" />,
+                                    "type": "DROPDOWN_LIST",
+                                    "constraints": {
+                                        "multipleSelection": <#if server.flavorType == "Virtual">false<#else>true</#if>,
+                                    	<#if !(server.flavorType == "Virtual" && hasAttachingVolume)>
+                                        "dynamicAvailableValues": {
+                                            "dataSourceId": "sxDataSource",
+                                            "parameters": {
+                                                "uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/volumes'",
+                                                "volumeType": "'${(server.flavorType == "Virtual")?string("virtual", "physical")}'",
+                                                "serverId": "'${server.id}'",
+                                                "authDataCenter":"'${message.authDataCenter}'"
+                                                <#if (message.compartment)??>
+                                                ,"compartment" : "'${message.compartment}'"
+                                                </#if>
+                                            }
+                                        },
+                                        </#if>
+                                        "requiredExpression": "true"
+                                    },
+                                    "editableExpression": <#if server.flavorType == "Virtual" && hasAttachingVolume>"false"<#else>"true"</#if>
+                                }]
+                            }
+                        }
+
+                        <#if hasAttachedVolume && server.flavorType == "Physical">
+                        ,
+                        {
+                            "actionId": "detachStorage",
+                            "name": <@utils.fallbackL10nField fallbackString="Detach the following Block Storage Volume(s) from this Server" />,
+                            "description": <@utils.fallbackL10nField fallbackString="Detaches the block storage Volume and/or associated R/W Snapshot Volumes from an existing servers" />,
+                            <#--"iconClass": "lifecycle-icon-Detach",-->
+                            "form": {
+                                "fields": [{
+                                    "id": "volumeId",
+                                    "name": <@utils.fallbackL10nField fallbackString="Volume" />,
+                                    "type": "DROPDOWN_LIST",
+                                    "constraints": {
+                                        "multipleSelection": true,
+                                        "dynamicAvailableValues": {
+                                            "dataSourceId": "sxDataSource",
+                                            "parameters": {
+                                                "uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/serverAttachments'",
+                                                "serverId": "'${server.id}'",
+                                                "volumeType": "'${(server.flavorType == "Virtual")?string("virtual", "physical")}'",
+                                                "authDataCenter":"'${message.authDataCenter}'"
+                                                <#if (message.compartment)??>
+                                                ,"compartment" : "'${message.compartment}'"
+                                                </#if>
+                                            }
+                                        },
+                                        "requiredExpression": "true"
+                                    }
+                                }]
+                            }
+                        }
+                        </#if>
+                        <#assign firstActionItem = false>
+                    </#if>
+                    <#-- "users" in original adapter-->
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.discarded?? || message.snapshot.committed??) && server.managementType != "Client" && server.subStatus?has_content && server.subStatus == "UP" && (!isHyperVVirtualMachine()) && !server.locked>
+                        <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "updateUser" <#--"iconClass": "lifecycle-icon-Reset",-->,
+                            "displayName": "Reset a Local OS User Account Password",
+                            "description": "Change ${(server.flavorType == "Physical")?string("physical", "virtual")} server password: You can change the Helion VPC-provided user password for a ${(server.flavorType == "Physical")?string("physical", "virtual")} tenant server."
+                        },
+                        {
+                            "actionId": "createUser" <#--"iconClass": "lifecycle-icon-User_Expert2",-->,
+                            "displayName": "Create a Local OS User Account",
+                            "description": "Add ${(server.flavorType == "Physical")?string("physical", "virtual")} server users: You can add users to a ${(server.flavorType == "Physical")?string("physical", "virtual")} tenant server instance."
+                        },
+                        {
+                            "actionId": "deleteUser" <#--"iconClass": "lifecycle-icon-User_Reduce",-->,
+                            "displayName": "Delete a Local OS User Account",
+                            "description": "Remove ${(server.flavorType == "Physical")?string("physical", "virtual")} tenant server user: You can remove users from a ${(server.flavorType == "Physical")?string("physical", "virtual")} tenant server instance."
+                        }
+                        <#assign firstActionItem = false>
+                    </#if>
+					<#if server.status == "ACTIVE" && server.flavorType == "Virtual" && (!(message.snapshot??) || message.snapshot.discarded?? || message.snapshot.committed??) && (!isHyperVVirtualMachine()) && !server.locked>
+					    <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "createSnapshot" <#--"iconClass": "lifecycle-icon-Create Snapshot"-->,
+                            "name": "Create Snapshot for this Virtual Machine",
+                            "displayName": "Create a snapshot for this Virtual Machine",
+                            "description": "Creating a VMware VM Snapshot is used to capture a VMware VM's current state prior to executing change management activities on it (e.g. applying updates). If the change fails, the VM Snapshot can be used to revert the VM's state back to the state when the VM Snapshot was taken.\nVPC strongly recommends that a VM is first shutdown before creating VM Snapshot to ensure a data consistent VM Snapshot. VPC cannot guarantee  data consistency of the VM Snapshot if this recommendation is not followed. In addition, a VM Snapshot for a Running VM takes longer as compared to the same operation on a Powered Off VM.\nYou must terminate a VM Snapshot within 72-hour window. If you fail to terminate a VM Snapshot within that time frame, then VPC will terminate it in the following manner; the VM snapshot will be automatically deleted by VPC, which means that VM changes will be committed and you will lose the ability to revert back to the VMs original state.",
+                            "form": {
+                                "fields": [
+                                    {
+                                	    "id": "operation",
+                                        "operation_name": "createSnapshot",
+                                        "operation_warning": "You have requested that a new VM Snapshot is created for this VM. Do you want to proceed?"
+                                	}
+                                ]
+                            }
+                        }
+                        <#assign firstActionItem = false>
+					</#if>
+                    <#--Enable capture action form for the capturable server-->
+                    <#if server.status == "ACTIVE" && server.flavorType == "Virtual" && server.subStatus == "DOWN" && server.managementType == "Client" && (!(message.snapshot??) || message.snapshot.discarded?? || message.snapshot.committed??) && !server.locked && server.captureAble??>
+                        <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "captureServer",
+                            "name": "Capture this Virtual Machine",
+                            "description": "Capture this Virtual Machine",
+                            "form": {
+                                "fields": [
+                                    {
+                                        "id":"VPC_FRIENDLY_NAME","name":"Image Name",
+                                        "type":"TEXT_INPUT",
+                                        "value":"",
+                                        "constraints": {
+                                            "requiredExpression": "true"
+                                        }
+                                    }
+                                    <#if server.osType?lower_case?contains("linux")>
+                                    ,
+                                    {
+                                        "id":"VPC_IMAGE_DEFAULT_PASSWORD",
+                                        "name":"Password",
+                                        "type":"PASSWORD_INPUT",
+                                        "value":"",
+                                        "constraints": {
+                                            "requiredExpression": "true"
+                                        }
+                                    }
+                                    </#if>
+                                ]
+                            }
+                        }
+                        <#assign firstActionItem = false>
+                    </#if>
+                    <#--End of capture action-->
+                    <#if server.locked && server.operationHistory?? && server.operationHistory == 'CAPTURE'>
+                        <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "linktoimage",
+                            "name": "Link to Image",
+                            "description": "Capture Image: You can click the button to check the capture image status."
+                        }
+                        <#assign firstActionItem = false>
+                    </#if>
+                    <#--"actions" in original adapter-->
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.status == "ACTIVE" || message.snapshot.discarded?? || message.snapshot.committed??) && serverSubStatusIsUP() && server.managementType == "Client" && (!isHyperVVirtualMachine())>
+                        <#if server.flavorType == "Virtual" && !server.locked>
+                            <#if !firstActionItem>,</#if>
+                            {
+                                "actionId": "stop" <#--"iconClass": "lifecycle-icon-Stop"-->,
+                                "displayName": "Stop this Virtual Machine",
+                                "description": "Stop Virtual Machine: You can stop a virtual tenant server instance."
+                            },
+                            {
+                                "actionId": "reboot" <#--"iconClass": "lifecycle-icon-Reboot"-->,
+                                "displayName": "Reboot this Virtual Machine",
+                                "description": "Reboot Virtual Machine: You can initiate a reboot of a virtual tenant server."
+                            }
+                            <#assign firstActionItem = false>
+                        </#if>
+                        <#if server.flavorType == "Physical" && !server.locked>
+                            <#if !firstActionItem>,</#if>
+                            {
+                                "actionId": "reboot" <#--"iconClass": "lifecycle-icon-Reboot"-->
+                            }
+                            <#assign firstActionItem = false>
+                        </#if>
+                    </#if>
+                    <#if server.status == "ACTIVE" && server.flavorType == "Physical" && !server.locked>
+                        <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "createRWSnapshot",
+                            "name": <@utils.fallbackL10nField fallbackString="Create Read-Write Storage Snapshot for Data Volumes" />,
+                            "description": <@utils.fallbackL10nField fallbackString="Create Snapshot to the listed LUN Volumes" />,
+                            "form": {
+                                "fields": [
+                                    {
+                                        "id": "volumeId",
+                                        "name": <@utils.fallbackL10nField fallbackString="Block Storage Volumes where Snapshot to be created" />,
+                                        "type": "DROPDOWN_LIST",
+                                        "constraints": {
+                                            "multipleSelection": true,
+                                            "requiredExpression": "true",
+                                            "dynamicAvailableValues": {
+                                                "dataSourceId": "sxDataSource",
+                                                "parameters": {
+                                                    "uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/serverAttachments'",
+                                                    "serverId": "'${server.id}'",
+                                                    "volumeType": "'${(server.flavorType == "Virtual")?string("virtual", "physical")}'",
+                                                    "copyType": "'NONE'",
+                                                    "authDataCenter":"'${message.authDataCenter}'"
+                                                    <#if (message.compartment)??>
+                                                    ,"compartment" : "'${message.compartment}'"
+                                                    </#if>
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                        <#assign firstActionItem = false>
+                    </#if>
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.status == "ACTIVE" || message.snapshot.discarded?? || message.snapshot.committed??) && serverSubStatusIsUP() && server.managementType == "HP" && (!isHyperVVirtualMachine())>
+                        <#if server.flavorType == "Virtual" && !server.locked>
+                            <#if !firstActionItem>,</#if>
+                            {
+                                "actionId": "reboot" <#--"iconClass": "lifecycle-icon-Reboot"-->,
+                                "displayName": "Reboot this Virtual Machine",
+                                "description": "Reboot Virtual Machine: You can initiate a reboot of a virtual tenant server."
+                            }
+                            <#assign firstActionItem = false>
+                        </#if>
+                    </#if>
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.discarded?? || message.snapshot.committed??) && server.subStatus?has_content && server.subStatus == "UP" && server.managementType == "Client" && (!isHyperVVirtualMachine())>
+                        <#if server.flavorType == "Virtual" && !server.locked>
+                            <#if !firstActionItem>,</#if>
+                            {
+                                "actionId": "suspend" <#--"iconClass": "lifecycle-icon-Pause"-->,
+                                "displayName": "Suspend this Virtual Machine",
+                                "description": "Suspend Virtual Machine: You can suspend a virtual tenant server instance."
+                            }
+                            <#assign firstActionItem = false>
+                        </#if>
+                    </#if>
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.status == "ACTIVE" || message.snapshot.discarded?? || message.snapshot.committed??) && server.managementType == "Client" && server.flavorType == "Virtual" && (!isHyperVVirtualMachine()) && !server.locked>
+                        <#if server.subStatus?has_content && server.subStatus == "DOWN" >
+                            <#if !firstActionItem>,</#if>
+                            {
+                                "actionId": "start" <#--"iconClass": "lifecycle-icon-Start"-->,
+                                "displayName": "Start this Virtual Machine",
+                                "description": "Start Virtual Machine: You can start a virtual tenant server instance."
+
+                            }
+                            <#assign firstActionItem = false>
+                        </#if>
+                    </#if>
+                    <#if server.status == "ACTIVE" && (!(message.snapshot??) || message.snapshot.discarded?? || message.snapshot.committed??) && server.managementType == "Client" && server.flavorType == "Virtual" && (!isHyperVVirtualMachine())>
+                        <#if server.subStatus?has_content && server.subStatus == "SUSPENDED" && !server.locked>
+                            <#if !firstActionItem>,</#if>
+                            {
+                                "actionId": "resume" <#--"iconClass": "lifecycle-icon-Resume"-->,
+                                "displayName": "Resume this Virtual Machine",
+                                "description": "Resume Virtual Machine: You can resume a suspended virtual tenant server instance."
+                            }
+                            <#assign firstActionItem = false>
+                        </#if>
+                    </#if>
+                    <#if ((message.snapshot??) && !message.snapshot.discarded?? && !message.snapshot.committed??) && !server.locked>
+                    	<#if !firstActionItem>,</#if>
+                            {
+                                "actionId": "refreshSnapshot",
+	                        	"name": "Auto Refresh Server Instance",
+	                        	"displayName": "Auto Refresh Server Instance Data",
+	                        	"description": "Auto Refresh the server instance data."
+                            }
+                        <#assign firstActionItem = false>
+                    </#if>
+                ]
+            }
+            <#if server.flavorType == "Virtual" && (!isHyperVVirtualMachine()) && server.status == "ACTIVE" && message.snapshot??>
+            <#assign snapshot = message.snapshot />
+            ,
+            {
+                "id": "${snapshot.id}",
+                "name": "SNAPSHOT",
+                "description": "SNAPSHOT",
+                "iconInSupplier": "${getServerIcon(server.flavorType, server.osType, server.applianceType)}",
+                "state": {
+                    "en": "<#if snapshot.status?has_content>${snapshot.status?lower_case?cap_first}</#if>"
+                },
+                "properties": {
+                    "fields": [
+							{
+		                            "id": "snapShotId",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot ID" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if snapshot.id?has_content>${snapshot.id}</#if>"
+		                	},
+		                	{
+		                            "id": "snapShotName",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Name" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if snapshot.name?has_content>${snapshot.name}</#if>"
+		                	},
+		                	{
+		                            "id": "snapShotStatus",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Status" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if snapshot.status?has_content>${snapshot.status}</#if>"
+		                	},
+		                	{
+		                            "id": "snapShotMessage",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Message" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if snapshot.message?has_content>${snapshot.message}</#if>"
+		                	},
+		                	{
+		                            "id": "snapShotSize",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Size in GB" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if snapshot.sizeInGB?has_content>${snapshot.sizeInGB}</#if>"
+		                	},
+		                	{
+		                            "id": "snapShotCreated",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Create Time" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if snapshot.created?has_content>${snapshot.created}</#if>"
+		                	},
+		                	{
+		                            "id": "snapShotExpiresAt",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Expire Time" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "<#if snapshot.expiresAt?has_content>${snapshot.expiresAt}</#if>"
+		                	}
+		                	<#if snapshot.discarded?has_content>
+		                	,
+		                	{
+		                            "id": "snapShotDiscarded",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Discarded Time" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "${snapshot.discarded}"
+		                	}
+		                	</#if>
+							<#if snapshot.committed?has_content>
+							,
+		                	{
+		                            "id": "snapShotCommitted",
+		                            "name": <@utils.fallbackL10nField fallbackString="Snapshot Committed Time" />,
+		                            "type": "TEXT_INPUT",
+		                            "value": "${snapshot.committed}"
+		                	}
+		                	</#if>
+                    ]
+                },
+                "availableActions": [
+                	<#assign firstActionItem = true />
+					<#if snapshot?? && snapshot.status?has_content && snapshot.status == "ACTIVE">
+					    <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "discardSnapshot" <#--"iconClass": "lifecycle-icon-Create Snapshot"-->,
+                            "name": "Discard Snapshot for this Virtual Machine",
+                            "displayName": "Discard the snapshot for this Virtual Machine",
+                            "description": "Discarding a VM Snapshot means that the VM is powered off and all changes to the VM since the creation of the VM Snapshot are deleted. This results in returning the VM to the state when the VM Snapshot was taken.\nThis is also known as Reverting of a VM to a VM Snapshot.",
+                            "form": {
+                                "fields": [
+                                    {
+                                	    "id": "operation",
+                                        "operation_name": "discardSnapshot",
+                                        "operation_warning": "You have requested that the VM Snapshot for this VM is discarded. The VM will be powered off and all changes to the VM since the creation of the VM Snapshot will be deleted. This will result in returning the VM to the state when the VM Snapshot was taken. Do you want to proceed?"
+                                	}
+                                ]
+                            }
+                        }
+                        <#assign firstActionItem = false>
+					    <#if !firstActionItem>,</#if>
+                        {
+                            "actionId": "commitSnapshot" <#--"iconClass": "lifecycle-icon-Create Snapshot"-->,
+                            "name": "Commit Snapshot for this Virtual Machine",
+                            "displayName": "Commit the snapshot for this Virtual Machine",
+                            "description": "Committing a VM Snapshot means that the VM is left in its current state and all changes to the VM since the creation of the VM Snapshot are kept.\nThis is also known as Deleting a VM Snapshot.",
+                            "form": {
+                                "fields": [
+                                    {
+                                        "id": "operation",
+                                        "operation_name": "commitSnapshot",
+                                        "operation_warning": "You have requested that the VM Snapshot for this VM is committed. The VM will be left in its current state and all changes to the VM since the creation of the VM Snapshot will be kept. Do you want to proceed?"
+                                    }
+                                ]
+                            }
+                        }
+                        <#assign firstActionItem = false>
+					</#if>
+                ]
+            }
+            </#if>            
+            <#if (server.flavorType == "Physical" && server.status == "ACTIVE" && hasSnapshot)> 
+                <#include "getPhysicalServerSnapshotResponse.ftl">
+            </#if>
+        ],        
+        "availableStaticActions":[
+            <#if server.status == "ACTIVE">
+            {
+                "actionId": "CANCEL"
+            }
+            </#if>
+        ],
+        "properties": {
+            "fields": [
+                <#if message.orderInfo.purchaseOrderId??>
+                {
+                    "id": "purchaseOrderId",
+                    "name": <@utils.fallbackL10nField fallbackString="Purchase Order ID" />,
+                    "type": "TEXT_INPUT",
+                    "value": "${message.orderInfo.purchaseOrderId}"
+                }
+                </#if>
+            ]
+        },
+        "watchProperties":{
+            "attachments":[
+                <#assign firstWatchPropertiesItem = true>
+                <#list server.attachedVolumes as vol>
+                    <#if !firstWatchPropertiesItem>,</#if>
+                    {
+                        "id": "${vol.id}",
+                        "name": "${vol.name}",
+                        "status":"${vol.attachmentStatus}"
+                    }
+                    <#assign firstWatchPropertiesItem = false>
+                </#list>
+            ]                        
+        }
+    }
+}
+</#if>
+<#elseif message.orderInfo.entityType == "storage">
+
+<#-- https://atcswa-cr-atlassian.ecs-core.ssn.hp.com/confluence/display/VPCAPIs/VOLUMES%3A+LIST -->
+<#--Possible status for physical volumes are CREATE, CREATING, ACTIVE, GROWING, GROW, DELETE, DELETING, DELETED, ERROR, UNKNOWN .-->
+<#--Possible status for virtual volumes are AVAILABLE, DELETED.-->
+
+<#assign STORAGE_TO_INST_STATE_MAPPING =
+    {
+        "UNKNOWN" : "PENDING",
+        "CREATE" : "PENDING",
+        "CREATING" : "PENDING",
+        "ACTIVE" : "ACTIVE",
+        "AVAILABLE" : "ACTIVE",
+        "GROWING" : "PENDING",
+        "GROW" : "PENDING",
+        "DELETE" : "CANCELLING",
+        "DELETING" : "CANCELLING",
+        "DELETED" : "CANCELLED",
+        "ERROR" : "TERMINATED"
+    }
+/>
+<#if message.storageInfo?has_content>
+<#assign storage = message.storageInfo />
+<#assign physicalStorage = (message.orderInfo.storageType == "physical")>
+<#assign virtualStorage = (message.orderInfo.storageType == "virtual")>
+<#if physicalStorage>
+    <#assign iconFile = "storage_p_v170515.png">
+    <#assign servers = executeOperation("getPhysicalVolumeServers",
+        {
+            "volumeId" : storage.id
+        }
+    ).storageInfo.servers>
+
+<#else>
+    <#assign iconFile = "storage_v_v170515.png">
+    <#-- 1.fetch server if exist attachment -->
+    <#if storage.attachments?size != 0>
+        <#-- only one server can be attached for virtual storage -->
+        <#assign serverInfo = executeOperation("getVirtualVolumeServers", { "volumeId" : storage.id})>
+    </#if>
+</#if>
+
+<#function mpcReplacePhysicalStorageTypeName storageTypeName>
+	<#assign replacedStorageTypeName = storageTypeName/>	
+	<#local indexOfSecondary = storageTypeName?lower_case?index_of("secondary")>
+	<#if indexOfSecondary != -1>
+		<#assign replacedStorageTypeName = storageTypeName[0..(indexOfSecondary-2)] />
+	</#if>	
+	<#return replacedStorageTypeName />
+</#function>
+
+<#assign volumeTypes = executeOperation("getVolumeType",{"storageType":message.orderInfo.storageType})>
+<#assign storageOfferingTypeName = "">
+<#if (volumeTypes.volumeTypes)?? && volumeTypes.volumeTypes?size &gt; 0>
+    <#list volumeTypes.volumeTypes as volumeType>
+        <#if volumeType.id == storage.volume_type>
+            <#if physicalStorage>
+                <#assign storageOfferingTypeName = mpcReplacePhysicalStorageTypeName(volumeType.name)>
+            <#else>
+                <#assign storageOfferingTypeName = mpcReplaceVirtualStorageTypeName(volumeType.id)>
+            </#if>
+            <#break>
+        </#if>
+    </#list>
+</#if>
+{
+    "entity": {
+        "summary" : {
+            "name": "${storage.name}",
+            "owner": "${message.orderInfo.propelUserId}",
+            "state": "${STORAGE_TO_INST_STATE_MAPPING[storage.status]}",
+            "substate": "${storage.status}",
+            "creationRequestIdInSupplier": "${message.supplierEntityId}"
+        },
+        "components": [
+            {
+                "id": "${message.supplierEntityId}",
+                "name": <@utils.fallbackL10nField storage.name />,
+                "description": <@utils.fallbackL10nField storage.name />,
+                "iconInSupplier": "${iconFile}",
+                "state": {
+                    "en": "${storage.status?lower_case?cap_first}"
+                },
+                "properties": {
+                    "fields": [
+                    	<#if (storage.id)??>
+	                    	{
+	                            "id": "id",
+	                            "name": "ID",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${storage.id}"
+	                        },
+                        </#if>                        
+                        <#if storage.volumeWwn?has_content>
+                        	{
+	                            "id": "wwid",
+	                            "name": "WWN",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${storage.volumeWwn}"
+	                        },
+                        </#if>
+                        <#if (message.orderInfo)?? && message.orderInfo.compartment?has_content>
+                        {
+                            "id": "compartment",
+                            "name": <@utils.fallbackL10nField fallbackString="Storage Location" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${message.orderInfo.compartment}"
+                        },
+                        </#if>
+                        {
+                            "id": "type",
+                            "name": <@utils.fallbackL10nField fallbackString="Storage Type" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${physicalStorage?string("Physical", "Virtual")}"
+                        },
+                        {
+                            "id": "size_requested",
+                            "name": <@utils.fallbackL10nField fallbackString="Requested Size [GiB]" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${storage.size_requested}"
+                        }
+                        <#if storage.size_allocated??>
+                        ,
+                        {
+                            "id": "size_allocated",
+                            "name": <@utils.fallbackL10nField fallbackString="Allocated Size [GiB]" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${storage.size_allocated}"
+                        }
+                        </#if>
+                        ,
+                        {
+                            "id": "offering_type",
+                            "name": <@utils.fallbackL10nField fallbackString="Block Storage Offering" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${storageOfferingTypeName}"
+                        }
+                        <#if storage.created??>
+                        ,
+                        {
+                            "id": "created",
+                            "name": <@utils.fallbackL10nField fallbackString="Created" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${storage.created}"
+                        }
+                        </#if>
+                        <#list servers![] as server>
+                        ,
+                        {
+                            "id": "server${server_index + 1}Name",
+                            "name": <@utils.fallbackL10nField fallbackString="Attached Server #${server_index + 1} Name" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${server.name} (${server.attachmentStatus})"
+                        }
+                        </#list>
+                        <#if (!physicalStorage) && (serverInfo?has_content)>
+                        ,
+                        {
+                            "id": "serverName",
+                            "name": <@utils.fallbackL10nField fallbackString="Attached Server Name" />,
+                            "type": "TEXT_INPUT",
+                            "value": "${serverInfo.server.name} (${serverInfo.server.attachmentStatus})"
+                        }
+                        </#if>
+                    ]
+                },
+                "availableActions": [   
+                	<#assign hasActions = false />                 
+                    <#-- "settings" in original adapter-->
+                    <#if STORAGE_TO_INST_STATE_MAPPING[storage.status] == "ACTIVE">                    	
+                    	{
+	                        "actionId": "refreshInstance",
+	                        "name": "Refresh Storage Instance",
+	                        "displayName": "Refresh Storage Instance",
+	                        "description": "Refresh the storage instance data."
+                    	}
+                        <#assign hasActions = true />
+                        <#if physicalStorage>
+                        	<#if hasActions>,</#if>
+	                        {
+	                            "actionId": "resizeStorage",
+	                            "name": <@utils.fallbackL10nField fallbackString="Resize Volume" />,
+	                            <#--"iconClass": "lifecycle-icon-Resize",-->
+	                            "form": {
+	                                "fields": [{
+	                                    "id": "requestedSize",
+	                                    "name": <@utils.fallbackL10nField fallbackString="Requested Size [GiB]" />,
+	                                    "type": "NUMBER_INPUT",
+	                                    "help": <@utils.fallbackL10nField fallbackString="Increase a LUN size up to 8 TiB in increments of 1 GiB" />,
+	                                    "value": "${(storage.size_allocated!0)}",
+	                                    "constraints": {
+	                                        "requiredExpression": "true",
+	                                        "integerExpression": "true",
+	                                        "minExpression": "${(storage.size_allocated + 1)?c}",
+	                                        "maxExpression": "8192"
+	                                    }
+	                                }]
+	                            }
+	                        }
+                        	<#assign hasActions = true>
+                        </#if>
+                        <#if virtualStorage >
+                           	<#if serverInfo?has_content>
+							    <#assign serverData = executeOperation("getVirutalServerDetailById", {
+							    			"messageHeader" : {
+							                   	"backendSystemType" : "MPC",
+							                    "targetInstance" : messageHeader.targetInstance
+							                 },
+							    			"compartment" : message.compartment,
+							    			"serverId": serverInfo.server.id,
+							    			"authDataCenter": message.authDataCenter
+							    		},context, false) />
+							    <#if serverData.server?? && serverData.server.flavor??>
+									<#assign flavorData  = serverData.server.flavor>
+								</#if>
+							</#if>
+							<#if !(serverInfo?has_content) || (flavorData?has_content && flavorData.hypervisor?has_content && flavorData.hypervisor?trim?lower_case == "esx") && storageOfferingTypeName != "Virtual Storage">
+								<#if hasActions>,</#if>
+                                  {
+                                   "actionId": "resizeStorage",
+                                    "name": <@utils.fallbackL10nField fallbackString="Resize Volume" />,
+                                    <#--"iconClass": "lifecycle-icon-Resize",-->
+                                    "form": {
+                                    "fields": [{
+                                    "id": "requestedSize",
+                                    "name": <@utils.fallbackL10nField fallbackString="Requested Size [GiB]" />,
+                                    "type": "NUMBER_INPUT",
+                                    "help": <@utils.fallbackL10nField fallbackString="Increase a volume size up to 1000 GiB in increments of 1 GiB" />,
+                                    "value": "${(storage.size_allocated!0)}",
+                                    "constraints": {
+                                        "requiredExpression": "true",
+                                        "integerExpression": "true",
+                                        "minExpression": "${(storage.size_allocated + 1)?c}",
+                                        "maxExpression": "1000",
+                                        "hideMinusPlus":true
+                                    }
+                                   }]
+                                  }
+                                 }
+                                <#assign hasActions = true>
+                            </#if>
+                        </#if>
+
+
+                        <#if physicalStorage || (storage.attachments?size == 0)>
+                        <#-- revert NSV-369 <#if physicalStorage> -->
+                        <#if hasActions>,<#else><#assign hasActions = true></#if>
+                        {
+                            "actionId": "attachStorage",
+                            "name" : {
+                                "en": "Attach this Volume to the following ${physicalStorage?string("Servers","Virtual Machine")}"
+                            },
+                            <#--"iconClass": "lifecycle-icon-Attach",-->
+                            "form": {
+                                "fields": [{
+                                    "id": "serverId",
+                                    "name": <@utils.fallbackL10nField fallbackString="Server" />,
+                                    "help" : {
+                                        "en": "${physicalStorage?string("","The Volume is dedicated to the Virtual Machine")}"
+                                    },
+                                    "type": "DROPDOWN_LIST",
+                                    "constraints": {
+                                        "multipleSelection": ${physicalStorage?c},
+                                        "dynamicAvailableValues": {
+                                            "dataSourceId": "sxDataSource",
+                                            "parameters": {
+                                                "uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/servers'",
+                                                "serverType": "'${physicalStorage?string("physical", "virtual")}'",
+                                                "volumeId": "'${storage.id}'",
+                                                "authDataCenter":"'${message.authDataCenter}'"
+                                                <#if (message.compartment)??>
+                                                ,"compartment" : "'${message.compartment}'"
+                                                </#if>
+                                            }
+                                        },
+                                        "requiredExpression": "true"
+                                    }
+                                }]
+                            }
+                        }
+                        </#if>
+                        <#if physicalStorage && (servers!?size gt 0)>
+                        <#if hasActions>,<#else><#assign hasActions = true></#if>
+                        {
+                            "actionId": "detachStorage",
+                            "name": <@utils.fallbackL10nField fallbackString="Detach this Volume from the following Servers" />,
+                            <#--"iconClass": "lifecycle-icon-Detach",-->
+                            "form": {
+                                "fields": [{
+                                    "id": "serverId",
+                                    "name": <@utils.fallbackL10nField fallbackString="Server" />,
+                                    "type": "DROPDOWN_LIST",
+                                    "constraints": {
+                                        "multipleSelection": true,
+                                        "dynamicAvailableValues": {
+                                            "dataSourceId": "sxDataSource",
+                                            "parameters": {
+                                                "uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/volumeAttachments'",
+                                                "volumeId": "'${storage.id}'",
+                                                "authDataCenter":"'${message.authDataCenter}'"
+                                                <#if (message.compartment)??>
+                                                ,"compartment" : "'${message.compartment}'"
+                                                </#if>
+                                            }
+                                        },
+                                        "requiredExpression": "true"
+                                    }
+                                }]
+                            }
+                        }
+                        </#if>
+                    </#if>
+                ]
+            }
+        <#if physicalStorage && message.entity.snapshots?size &gt; 0>
+            <#include "getPhysicalServerSnapshotResponse.ftl">
+        </#if>
+        ],
+        "availableStaticActions":[
+            <#if ['ACTIVE', 'AVAILABLE']?seq_contains(storage.status)>
+            {
+                "actionId": "CANCEL"
+            }
+            </#if>
+        ],
+        "properties": {
+            "fields": [
+                <#if message.orderInfo.purchaseOrderId??>
+                {
+                    "id": "purchaseOrderId",
+                    "name": <@utils.fallbackL10nField fallbackString="Purchase Order ID" />,
+                    "type": "TEXT_INPUT",
+                    "value": "${message.orderInfo.purchaseOrderId}"
+                }
+                </#if>
+            ]
+        },
+        "watchProperties":{
+            "attachments":[
+                <#if physicalStorage>
+                    <#assign firstWatchPropertiesItem = true>
+                    <#list servers![] as server>
+                        <#if !firstWatchPropertiesItem>,</#if>
+                        {
+                            "id": "${server.id}",
+                            "name": "${server.name}",
+                            "status":"${server.attachmentStatus}"
+                        }
+                        <#assign firstWatchPropertiesItem = false>
+                    </#list>
+                <#else>
+                    <#if serverInfo?has_content>
+                        {
+                            "id": "${serverInfo.server.id}",
+                            "name": "${serverInfo.server.name}",
+                            "status": "${serverInfo.server.attachmentStatus}"
+                        }
+                    </#if>
+                </#if>
+            ]
+        }
+    }
+}
+</#if>
+<#elseif message.orderInfo.entityType == "osCluster">
+<#function getIcon type>
+    <#if type?lower_case?contains("redhat")>
+        <#return "server_redhat_p_v170322.png">
+    <#elseif type?lower_case?contains("suse")>
+        <#return "server_suse_p_v170322.png">
+    <#elseif type?lower_case?contains("windows")>
+        <#return "server_windows_p_v170322.png">
+    <#else>
+    	<#return null>
+    </#if>
+</#function>
+<#assign CLUSTER_TO_INST_STATE_MAPPING =
+    {
+        "UNKNOWN" : "UNKNOWN",
+        "QUEUED" : "QUEUED",
+        "BUILD" : "BUILD",
+        "ACTIVATION_READY" : "ACTIVATION_READY",
+        "TICKET_EXPIRED" : "TICKET_EXPIRED",
+        "TICKET_FAILED" : "TICKET_FAILED",
+        "ACTIVE" : "ACTIVE",
+        "DEACTIVATION_READY" : "DEACTIVATION_READY",
+        "TEARDOWN" : "TEARDOWN",
+        "DELETE" : "CANCELLING",
+        "DELETING" : "CANCELLING",
+        "DELETED" : "CANCELLED",
+        "ERROR" : "TERMINATED"
+    }
+/>
+<#if message.osCluster?has_content>
+<#assign osClusterStatus = message.osCluster.status />
+<#assign clusterType = message.orderInfo.serverType>
+<#assign osCluster = "">
+<#if (message.orderInfo)?? && (message.orderInfo.ticket)??>
+    <#assign osCluster = message.orderInfo.ticket>
+</#if>
+<#assign dataCenter = message.orderInfo.dataCenter/>
+<#assign primaryLocation = "">
+<#assign secondaryLocation = "">
+<#if (message.dataCentersInfo)?? && message.dataCentersInfo?size &gt; 0>
+    <#list message.dataCentersInfo as location>
+        <#if (location.dcCode)?? && location.dcCode == dataCenter>
+            <#if (location.alias)??>
+                <#assign primaryLocation = location.alias?upper_case>
+            </#if>
+            <#if (location.isDualDc)?? && location.isDualDc?lower_case == "yes" && (location.pairDc)??>
+                <#assign secondaryLocation = location.pairDc?upper_case>
+            </#if>
+        </#if>
+    </#list>
+</#if>
+<#assign sla =
+    {
+        "99.95%":"Gold - 99.95%",
+        "99.99%":"Platinum - 99.99%",
+        "99.999%":"Diamond - 99.999%"
+    }
+/>
+<#assign statusTicket =
+    {
+        "TICKETING":"Open",
+        "TICKET_CLOSED":"Closed",
+        "TICKET_EXPIRED":"Expired",
+        "TICKET_FAILED":"Failed",
+        "ACTIVATING":"Closed",
+        "ACTIVE":"Closed"
+    }
+/>
+
+{
+    "entity": {
+        "summary" : {
+            "name": "${osCluster.clusterName}",
+            "owner": "${message.orderInfo.propelUserId}",
+            "state": "${CLUSTER_TO_INST_STATE_MAPPING[osClusterStatus]}",
+            "substate": "${osClusterStatus}",
+            "creationRequestIdInSupplier": "${message.supplierEntityId}"
+        },
+        "components": [
+            {
+                "id": "${message.supplierEntityId}",
+                "name": <@utils.fallbackL10nField fallbackString="OS CLUSTER" />,
+                "description": <@utils.fallbackL10nField fallbackString="OS CLUSTER" />,
+                "iconInSupplier": "${getIcon(clusterType)}",
+                "state": {
+                    "en": "${osClusterStatus?lower_case?cap_first}"
+                },
+                "properties": {
+                    "fields": [
+                    	<#if (message.orderInfo.id)??>
+	                    	{
+	                            "id": "id",
+	                            "name": "ID",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${message.orderInfo.id}"
+	                        },
+                        </#if>
+                        <#if (message.orderInfo)?? && (message.orderInfo.compartment)??>
+                            {
+                                "id": "compartment",
+                                "name": <@utils.fallbackL10nField fallbackString="Cluster Location" />,
+                                "type": "TEXT_INPUT",
+                                <#if osCluster.mpcOsClusterSpanBoth?? && osCluster.mpcOsClusterSpanBoth=="true">
+                                	"value": "Both ${primaryLocation} and ${secondaryLocation}"
+								<#else>
+                                	"value": "${message.orderInfo.compartment}"
+                                </#if>
+                            },
+                        </#if>
+                        <#if (osCluster.clusterName)??>
+                            {
+                                "id": "clusterName",
+                                "name": <@utils.fallbackL10nField fallbackString="Cluster Name" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${osCluster.clusterName}"
+                            },
+                        </#if>
+                        <#if (osCluster.vlan)??>
+                            {
+                                "id": "vlan",
+                                "name": <@utils.fallbackL10nField fallbackString="VLAN" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${osCluster.vlan}"
+                            },
+                        </#if>
+                        <#if (osCluster.mpcHPEProvidedLicense)??>
+                            {
+                                "id": "mpcHPEProvidedLicense",
+                                "name": <@utils.fallbackL10nField fallbackString="DXC provides the OS License Key" />,
+                                "type": "TEXT_INPUT",
+                                "value": <#if osCluster.mpcHPEProvidedLicense?? && osCluster.mpcHPEProvidedLicense=="true">"Yes"<#else>"No"</#if>
+                            },
+                        </#if>
+                        <#if (osCluster.mpcOsClusterSpanBoth)??>
+                            {
+                                "id": "mpcOsClusterSpanBoth",
+                                <#if primaryLocation?has_content && secondaryLocation?has_content>
+                                	"name": <@utils.fallbackL10nField fallbackString="Evenly span both ${primaryLocation} and ${secondaryLocation} Locations" />,
+								<#else>
+                                	"name": <@utils.fallbackL10nField fallbackString="Evenly span both Primary and Secondary Locations" />,
+                                </#if>
+                                "type": "TEXT_INPUT",
+                                "value": <#if osCluster.mpcOsClusterSpanBoth?? && osCluster.mpcOsClusterSpanBoth=="true">"Yes"<#else>"No"</#if>
+                            },
+                        </#if>
+                        <#if (osCluster.mpcImageShortLabel)??>
+                            {
+                                "id": "mpcImageShortLabel",
+                            <#if (message.orderInfo)?? && (message.orderInfo.serverType)?? && (message.orderInfo.serverType)?lower_case?contains("win")>
+                                "name": <@utils.fallbackL10nField fallbackString="Microsoft® Windows Server® Version" />,
+                            <#elseif (message.orderInfo)?? && (message.orderInfo.serverType)?? && (message.orderInfo.serverType)?lower_case?contains("suse")>
+                                "name": <@utils.fallbackL10nField fallbackString="SUSE® Linux Enterprise Server® Version" />,
+                            <#else>
+                                "name": <@utils.fallbackL10nField fallbackString="Red Hat® Enterprise Linux® Server Version" />,
+                            </#if>
+                                "type": "TEXT_INPUT",
+                                "value": "${osCluster.mpcImageShortLabel}"
+                            },
+						</#if>
+						<#if (osCluster.osClusterSla)??>
+                            {
+                                "id": "osClusterSla",
+                                "name": <@utils.fallbackL10nField fallbackString="Service Level" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${sla[osCluster.osClusterSla]}"
+                            }
+                        </#if>
+                    ]
+                },
+                "availableActions": [   
+                	<#assign hasActions = false />                 
+                    <#-- "settings" in original adapter-->
+                    <#if CLUSTER_TO_INST_STATE_MAPPING[osClusterStatus] == "ACTIVE">                    	
+                    	{
+	                        "actionId": "refreshInstance",
+	                        "name": "Refresh OS Cluster Instance",
+	                        "displayName": "Refresh OS Cluster Instance",
+	                        "description": "Refresh the OS Cluster instance data."
+                    	}
+                        <#assign hasActions = true />
+                    </#if>
+
+					<#-- 改动 reboot 给页面数据os cluster node id-->
+
+					 <#if CLUSTER_TO_INST_STATE_MAPPING[osClusterStatus] == "ACTIVE">                    	
+                    	<#if hasActions>,<#else><#assign hasActions = true></#if>
+                        {
+                            "actionId": "rebootOsCluster",
+                            "name" : {
+                                "en": "Attach this Volume to the following ${physicalStorage?string("Servers","Virtual Machine")}"
+                            },
+                            <#--"iconClass": "lifecycle-icon-Attach",-->
+                            "form": {
+                                "fields": [{
+                                    "id": "serverId",
+                                    "name": <@utils.fallbackL10nField fallbackString="Server" />,
+                                    "help" : {
+                                        "en": ""
+                                    },
+                                    "type": "DROPDOWN_LIST",
+                                    "constraints": {
+                                        "multipleSelection": false,
+                                        "dynamicAvailableValues": {
+                                            "dataSourceId": "sxDataSource",
+                                            "parameters": {
+                                                "uri": "'\/optionValues/MPC/${messageHeader.targetInstance}/OsClusterNodeId'",
+                                                <#--
+                                                
+                                                "serverType": "'${physicalStorage?string("physical", "virtual")}'",
+                                                "volumeId": "'${storage.id}'",
+                                                
+                                                -->
+												
+                                                "authDataCenter":"'${message.authDataCenter}'"
+                                                <#if (message.compartment)??>
+                                                ,"compartment" : "'${message.compartment}'"
+                                                </#if>
+                                            }
+                                        },
+                                        "requiredExpression": "true"
+                                    }
+                                }]
+                            }
+                        }
+                        <#assign hasActions = true />
+                    </#if>
+
+
+
+                ]
+            }
+            <#if (osCluster.primaryNodes)?? && (osCluster.primaryNodes?size &gt; 0)>
+            <#list osCluster.primaryNodes?sort_by("name") as server>
+            ,
+            {
+                "id": "${server.id}",
+                "name": "MEMBER NODES HARDWARE AT ${primaryLocation} LOCATION",
+                "description": "MEMBER NODES HARDWARE AT ${primaryLocation} LOCATION",
+                "iconInSupplier": "${getIcon(clusterType)}",
+                "state": {
+                    "en": "${server.status?lower_case?cap_first}"
+                },
+                "properties": {
+                    "fields": [
+	                    	{
+	                            "id": "name_${server.name}",
+	                            "name": "Name",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${server.name}"
+	                        },
+                            {
+	                            "id": "physical _Server_Location_${server.name}",
+	                            "name": "Physical Server Location",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${primaryLocation}"
+	                        },
+                            {
+                                "id": "fqdn__${server.name}",
+                                "name": "Server FQDN",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.fqdn}"
+                            },
+                            {
+                                "id": "privateIP__${server.name}",
+                                "name": "Internal Network IP Address",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.privateIP}"
+                            },
+                            {
+                                "id": "hardware_${server.name}",
+                                "name": "Server Hardware",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.hardware}"
+                            },
+                            {
+                                "id": "backupEnabled_${server.name}",
+                                "name": "Server Backup Enabled",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.backupEnabled}"
+                            }
+                            <#assign i = 0>
+                            <#if (server.replicatesVolumes)?? && (server.replicatesVolumes?size &gt; 0)>
+                            <#list server.replicatesVolumes as replicatesVolume>
+                            <#assign i = i + 1>
+                            ,
+                            {
+                                "id": "replicatesName_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Name" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.name}"
+                            },
+                            {
+                                "id": "replicatesId_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} ID" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.id}"
+                            },
+                            {
+                                "id": "replicatesStatus_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Status" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.status?lower_case?cap_first} / ${replicatesVolume.attachmentStatus?lower_case?cap_first}"
+                            },
+                            {
+                                "id": "replicatesSize_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Capacity [GiB]" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.allocatedSize}"
+                            },
+                            {
+                                "id": "replicatesWwn_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} WWN" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.wwn}"
+                            },
+                            {
+                                "id": "replicatesType_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Block Storage Offering" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.type}"
+                            },
+                            {
+                                "id": "replicatesSecondName_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Replicates Volume Name" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.replicatesName}"
+                            },
+                            {
+                                "id": "replicatesSecondWwn_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Replicates Volume WWN" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.replicatesWwn}"
+                            }
+                            </#list>
+                            </#if>
+                            <#if (server.attachedVolumes)?? && (server.attachedVolumes.attachedVolumes)?? && (server.attachedVolumes.attachedVolumes?size &gt; 0)>
+                            <#list server.attachedVolumes.attachedVolumes as vol>
+                            <#assign i = i + 1>
+                            ,
+                            {
+                                "id": "volName_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Name" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.name}"
+                            },
+                            {
+                                "id": "volId_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} ID" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.id}"
+                            },
+                            {
+                                "id": "volStatus_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Status" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.status?lower_case?cap_first} / ${vol.attachmentStatus?lower_case?cap_first}"
+                            },
+                            {
+                                "id": "volSize_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Capacity [GiB]" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.allocatedSize}"
+                            },
+                            {
+                                "id": "volWWN_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} WWN" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.wwn}"
+                            },
+                            {
+                                "id": "volType_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Block Storage Offering" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.typeName}"
+                            }
+                            </#list>
+                            </#if>
+                    ]
+                },
+                "availableActions": []
+            }
+            </#list>
+            </#if>
+            <#if (osCluster.secondaryNodes)?? && (osCluster.secondaryNodes?size &gt; 0)>
+            <#list osCluster.secondaryNodes?sort_by("name") as server>
+            ,
+            {
+                "id": "${server.id}",
+                "name": "MEMBER NODES HARDWARE AT ${secondaryLocation} LOCATION",
+                "description": "MEMBER NODES HARDWARE AT ${secondaryLocation} LOCATION",
+                "iconInSupplier": "${getIcon(clusterType)}",
+                "state": {
+                    "en": "${server.status?lower_case?cap_first}"
+                },
+                "properties": {
+                    "fields": [
+	                    	{
+	                            "id": "name_${server.name}",
+	                            "name": "Name",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${server.name}"
+	                        },
+                            {
+	                            "id": "physical_Server_Location_${server.name}",
+	                            "name": "Physical Server Location",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${secondaryLocation}"
+	                        },
+                            {
+                                "id": "fqdn__${server.name}",
+                                "name": "Server FQDN",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.fqdn}"
+                            },
+                            {
+                                "id": "privateIP__${server.name}",
+                                "name": "Internal Network IP Address",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.privateIP}"
+                            },
+                            {
+                                "id": "hardware_${server.name}",
+                                "name": "Server Hardware",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.hardware}"
+                            },
+                            {
+                                "id": "backupEnabled_${server.name}",
+                                "name": "Server Backup Enabled",
+                                "type": "TEXT_INPUT",
+                                "value": "${server.backupEnabled}"
+                            }
+                            <#assign i = 0>
+                            <#if (server.replicatesVolumes)?? && (server.replicatesVolumes?size &gt; 0)>
+                            <#list server.replicatesVolumes as replicatesVolume>
+                            <#assign i = i + 1>
+                            ,
+                            {
+                                "id": "replicatesName_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Name" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.name}"
+                            },
+                            {
+                                "id": "replicatesId_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} ID" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.id}"
+                            },
+                            {
+                                "id": "replicatesStatus_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Status" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.status?lower_case?cap_first} / ${replicatesVolume.attachmentStatus?lower_case?cap_first}"
+                            },
+                            {
+                                "id": "replicatesSize_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Capacity [GiB]" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.allocatedSize}"
+                            },
+                            {
+                                "id": "replicatesWwn_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} WWN" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.wwn}"
+                            },
+                            {
+                                "id": "replicatesType_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Block Storage Offering" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.type}"
+                            },
+                            {
+                                "id": "replicatesPrimaryName_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Replicates Volume Name" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.replicatesName}"
+                            },
+                            {
+                                "id": "replicatesPrimaryWwn_${replicatesVolume.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Replicates Volume WWN" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${replicatesVolume.replicatesWwn}"
+                            }
+                            </#list>
+                            </#if>
+                            <#if (server.attachedVolumes)?? && (server.attachedVolumes.attachedVolumes)?? && (server.attachedVolumes.attachedVolumes?size &gt; 0)>
+                            <#list server.attachedVolumes.attachedVolumes as vol>
+                            <#assign i = i + 1>
+                            ,
+                            {
+                                "id": "volName_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Name" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.name}"
+                            },
+                            {
+                                "id": "volId_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} ID" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.id}"
+                            },
+                            {
+                                "id": "volStatus_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Status" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.status?lower_case?cap_first} / ${vol.attachmentStatus?lower_case?cap_first}"
+                            },
+                            {
+                                "id": "volSize_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Capacity [GiB]" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.allocatedSize}"
+                            },
+                            {
+                                "id": "volWWN_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} WWN" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.wwn}"
+                            },
+                            {
+                                "id": "volType_${vol.name}",
+                                "name": <@utils.fallbackL10nField fallbackString="Volume #${i} Block Storage Offering" />,
+                                "type": "TEXT_INPUT",
+                                "value": "${vol.typeName}"
+                            }
+                            </#list>
+                            </#if>
+                    ]
+                },
+                "availableActions": []
+            }
+            </#list>
+            </#if>
+            <#if (osCluster.ticketId)??>
+            ,
+            {
+                "id": "${osCluster.ticketId}",
+                "name": "SM9 TICKET",
+                "description": "SM9 TICKET",
+                "iconInSupplier": "${getIcon(clusterType)}",
+                "state": {
+                    "en": "${statusTicket[osCluster.ticketStatus]}"
+                },
+                "properties": {
+                    "fields": [
+	                    	{
+	                            "id": "ticketId",
+	                            "name": "Ticket ID",
+	                            "type": "TEXT_INPUT",
+	                            "value": "${osCluster.ticketId}"
+	                        }
+                    ]
+                },
+                "availableActions": []
+            }
+            </#if>
+        ],
+        "availableStaticActions":[
+            <#-- <#if !(['CANCELLED','CANCELLING']?seq_contains(osCluster.status))>
+            {
+                "actionId": "CANCEL"
+            }
+            </#if>-->
+        ],
+        "properties": {
+            "fields": [
+                <#if message.orderInfo.purchaseOrderId??>
+                {
+                    "id": "purchaseOrderId",
+                    "name": <@utils.fallbackL10nField fallbackString="Purchase Order ID" />,
+                    "type": "TEXT_INPUT",
+                    "value": "${message.orderInfo.purchaseOrderId}"
+                }
+                </#if>
+            ]
+        },
+        "watchProperties":{
+            "attachments":[
+                <#assign firstWatchPropertiesItem = true>
+                <#list servers![] as server>
+                    <#if !firstWatchPropertiesItem>,</#if>
+                    {
+                        "id": "${server.id}",
+                        "name": "${server.name}",
+                        "status":"${server.status}"
+                    }
+                    <#assign firstWatchPropertiesItem = false>
+                </#list>
+				<#list volumes![] as vol>
+                    <#if !firstWatchPropertiesItem>,</#if>
+                    {
+                        "id": "${vol.id}",
+                        "name": "${vol.name}",
+                        "status":"${vol.status}"
+                    }
+                    <#assign firstWatchPropertiesItem = false>
+                </#list>
+            ]
+        }
+    }
+}
+</#if>
+</#if>
+</#escape>

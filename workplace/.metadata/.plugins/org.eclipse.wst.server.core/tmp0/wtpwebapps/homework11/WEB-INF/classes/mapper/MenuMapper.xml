@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mapper.MenuMapper">
+<!-- public abstract List<String> select_Menu_management();
+	public abstract List<String> select_User_management();
+	public abstract List<String> select_Role_management();
+	public abstract List<String> select_User_role_management();
+	public abstract List<String> select_Role_level_management(); -->
+	
+	 <select id="select_Menu_All" resultType="MenuInfo">
+    	select id,m_1,m_2,m_3,m_4,m_5,m_6,m_7,m_8 from menu;
+    </select>
+	
+    <select id="select_Menu_name" resultType="MenuInfo" parameterType="String">
+    	select id,m_1,m_2,m_3,m_4,m_5,m_6,m_7,m_8 from menu where id = #{name} ;
+    </select>
+	
+	  <insert id="insert_Menu_All"  parameterType="pojo.MenuInfo">
+    	insert into menu(id,m_1,m_2,m_3,m_4,m_5,m_6,m_7,m_8) value(#{id},#{m_1},#{m_2},#{m_3},#{m_4},#{m_5},#{m_6},#{m_7},#{m_8}); 
+    </insert>
+
+    <update id="update_Menu_All"  parameterType="pojo.MenuInfo" >
+   		update menu set m_1=#{m_1},m_2=#{m_2},m_3=#{m_3},m_4=#{m_4},m_5=#{m_5},
+   		m_6=#{m_6},m_7=#{m_7},m_8=#{m_8}  where id = #{id};
+   </update>  
+    
+  	<delete id="delete_Menu_All">
+  		delete from menu where id = #{name}
+  	</delete>
+    
+    <select id="getAllWhere" resultType="pojo.MenuInfo">
+		select id,m_1,m_2,m_3,m_4,m_5,m_6,m_7,m_8 from menu
+		<where>
+			<include refid="selectWhere"></include>
+		</where>
+	</select>
+
+	<sql id="selectWhere">
+		<if test="_parameter != null">
+			and id = #{id}
+		</if>
+	</sql>
+  
+    
+</mapper>

@@ -1,0 +1,4 @@
+GitRepositoriesView.GitDirectories=C\:\\chenjian\\git-2.20.1\\repository\\mpc\\.git;C\:\\chenjian\\eclipse\\eclipse-workspace\\dropwizard\\dropwizard\\.git;C\:\\chenjian\\eclipse\\eclipse-workspace\\word\\.git;
+GitRepositoriesView.GitDirectories.relative=C\:\\chenjian\\git-2.20.1\\repository\\mpc\\.git;dropwizard\\dropwizard\\.git;word\\.git;
+core_autoIgnoreDerivedResources=false
+eclipse.preferences.version=1

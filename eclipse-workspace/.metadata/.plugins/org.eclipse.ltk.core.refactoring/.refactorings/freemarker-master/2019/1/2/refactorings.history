@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;freemarker-master/src/main/resources/templates/free1.html&apos; to &apos;free1.ftl&apos;" description="Rename resource &apos;free1.html&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/main/resources/templates/free1.html" name="free1.ftl" stamp="1547000268580" updateReferences="true"/>
+</session>

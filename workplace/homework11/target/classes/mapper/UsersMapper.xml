@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="mapper.UsersMapper">
+
+    <!-- 单表查询info数据 -->
+    <select id="select_users_All" resultType="UsersInfo">
+        select uid,username,password from users ;
+    </select>
+    
+    <select id="select_users_uid" resultType="UsersInfo" parameterType="int">
+    	select uid,username,password from users where uid = #{uid} ;
+    </select>
+    
+     <insert id="insert_users" parameterType="UsersInfo">
+    	insert into users(uid,username,password) value(#{uid},#{username},#{password}); 
+    </insert>
+
+    <update id="update_users" >
+   		update users set password = #{password} where uid = #{uid};
+   </update>  
+    
+    <update id="updateAll" parameterType="UsersInfo">
+   		update users set password = #{password},username = #{username} where uid = #{uid};
+   </update> 
+    
+  	<delete id="delete_users">
+  		delete from users where uid = #{uid}
+  	</delete>
+    
+     <select id="getAllUsersWhere" resultType="UsersInfo" parameterType="UsersInfo">
+		select uid,username,password from users
+		<where>
+			<include refid="selectUsersWhere"></include>
+		</where>
+	</select>
+
+	<sql id="selectUsersWhere">
+		<if test="uid != null and uid != ''">
+			and uid = #{uid}
+		</if>
+		<if test="username != null and username != ''">
+			and username = #{username}
+		</if>
+		<if test="password != null and password != ''">
+			and password = #{password}
+		</if>
+	</sql>
+    
+</mapper>

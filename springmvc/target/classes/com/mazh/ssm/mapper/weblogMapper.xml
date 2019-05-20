@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mazh.ssm.mapper.WeblogMapper">
+    <!-- 查询所有记录， 返回的是一个List<Student> -->
+    <select id="getAllWeblog" resultType="Weblog">
+		select * from weblog
+	</select>
+
+    <select id="getAllWeblogWhere" resultType="Weblog" parameterType="Weblog">
+        select * from weblog
+        <where>
+            <include refid="selectWeblogWhere"></include>
+        </where>
+    </select>
+
+    <sql id="selectWeblogWhere">
+        <if test="valid != null and valid != ''">
+            and valid = #{valid}
+        </if>
+        <if test="remote_addr != null and remote_addr != ''">
+            and remote_addr = #{remote_addr}
+        </if>
+        <if test="remote_user != null and remote_user != ''">
+            and remote_user = #{remote_user}
+        </if>
+        <if test="time_local != null and time_local != ''">
+            and time_local = #{time_local}
+        </if>
+        <if test="request != null and request != ''">
+            and request = #{request}
+        </if>
+        <if test="status != null and status != ''">
+            and status = #{status}
+        </if>
+        <if test="body_bytes_sent != null and body_bytes_sent != ''">
+            and body_bytes_sent = #{body_bytes_sent}
+        </if>
+        <if test="http_referer != null and http_referer != ''">
+            and http_referer = #{http_referer}
+        </if>
+        <if test="http_user_agent != null and http_user_agent != ''">
+            and http_user_agent = #{http_user_agent}
+        </if>
+    </sql>
+
+    <!-- 查询一个ip -->
+    <select id="getOneWeblog" parameterType="String" resultType="Weblog">
+		select * from weblog where remote_addr = #{remote_addr}
+	</select>
+
+    <!-- 插入一个ip记录 -->
+    <insert id="insertWeblog" parameterType="Weblog">
+		insert into weblog
+		(valid, remote_addr, remote_user, time_local,request,status,body_bytes_sent,http_referer,http_user_agent)
+		values (#{valid}, #{remote_addr}, #{remote_user},#{time_local},#{request},#{status},#{body_bytes_sent},#{http_referer},
+        #{http_user_agent})
+	</insert>
+
+    <!-- 修改一个ip记录 -->
+    <update id="updateWeblog" parameterType="Weblog">
+		update weblog set
+		valid = #{valid}, remote_addr = #{remote_addr}, remote_user = #{remote_user}, time_local = #{time_local}
+		, request = #{request}, status = #{status}, body_bytes_sent = #{body_bytes_sent}, http_referer = #{http_referer}
+		, http_user_agent = #{http_user_agent}
+		where remote_addr = #{remote_addr}
+	</update>
+
+    <!-- 删除一个ip记录 -->
+    <delete id="deleteWeblog" parameterType="String">
+		delete from weblog
+		where remote_addr = #{remote_addr}
+	</delete>
+</mapper>

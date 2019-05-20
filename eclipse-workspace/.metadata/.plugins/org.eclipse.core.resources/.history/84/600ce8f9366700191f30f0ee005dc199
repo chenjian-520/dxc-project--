@@ -1,0 +1,217 @@
+<#escape x as x?json_string>
+<#macro createComputeOptionsHv list CDMPCPrimaryOfferingId CDMPCOfferingIds>
+            "form": {
+                "fields": [
+					{
+						"id":"fieldset1",
+						"name": "Network Configuration",
+						"type":"FIELDSET",
+						"active": true,
+						"fields":[
+							{
+								"id": "mpcPropelOrgCompartmentName",
+								"name": "Compartment Name",
+								"type": "TEXT_INPUT",
+								"help":"Set the current compartment",
+								"value": "",
+								"calculatePriceOnChange": "false",
+								"constraints": {
+									"requiredExpression": "true"
+								}
+							},
+							{
+                                "id": "mpcDatacenter",
+                                "name": "Data Center",
+                                "type": "DROPDOWN_LIST",
+                                "activeExpression": "true",
+                                "help":"Available Datacenters for this Server",
+                                "constraints": {
+                                    "multipleSelection": false,
+                                    "requiredExpression": "true",
+                                    "dynamicAvailableValues": {
+                                        "dataSourceId": "sxDataSource",
+                                        "parameters": {
+                                            "uri": "'\\/optionValues/MPC/${context.targetInstance}/v2dataCenters'",
+                                            "compartment" : "mpcPropelOrgCompartmentName.value"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+								"id": "mpcCreateEntityInSecondarySiteOfDC",
+								"name": "Create the Server in Secondary Site",
+								"type": "CHECKBOX",
+								"active": true,
+								"value":"false",
+								"editable":true
+							},
+							<#if CDMPCCId == "hyperVVirtualMachineRedHat" || CDMPCCId == "hyperVVirtualMachineSuse"|| CDMPCCId == "hyperVVirtualMachineWindows">
+							{
+								"id": "v2ServerName",
+								"name": "Hostname",
+								"type": "TEXT_INPUT",
+								"help":"Set a hostname up to 15 characters starting with a letter for the unique network DNS name, containing only lower-case character, upper-case character and number.",
+								"calculatePriceOnChange": "false",
+								"constraints": {
+									"pattern": 
+									{
+										"regexp": "[A-Za-z]+[A-Za-z0-9]+"
+									},
+									"requiredExpression": "true",
+									"maxLength": 15
+								}
+							},
+							</#if>
+							{
+								"id": "mpcHPEManaged",
+								"name": "HPE administers the Server",
+								"type": "CHECKBOX",
+								"active": true,
+								"value":"true",
+								"editable":true
+							},
+							{
+								"id": "mpcVlan",
+								"name": "VLAN",
+								"type": "DROPDOWN_LIST",
+								"activeExpression": "mpcHPEManaged.value== true && mpcDatacenter.value",
+								"help":"Available VLANs administered by DXC for this Server",
+								"calculatePriceOnChange": "false",
+								"constraints": {
+									"multipleSelection": false,
+									"requiredExpression": "true",
+									"dynamicAvailableValues": {
+										"dataSourceId": "sxDataSource",
+										"parameters": {
+											"uri": "'\\/optionValues/MPC/${context.targetInstance}/vlans'",
+											"mpcHPEManaged":"mpcHPEManaged.value",
+											"mpcDatacenter":"mpcDatacenter.value",
+											"compartment" : "mpcPropelOrgCompartmentName.value"
+										}
+									}
+								}
+							},
+							{
+								"id": "mpcVlan2",
+								"name": "VLAN",
+								"type": "DROPDOWN_LIST",
+								"activeExpression": "mpcHPEManaged.value== false && mpcDatacenter.value",
+								"help":"Available VLANs administered by me for this Server",
+								"calculatePriceOnChange": "false",
+								"constraints": {
+									"multipleSelection": false,
+									"requiredExpression": "true",
+									"dynamicAvailableValues": {
+										"dataSourceId": "sxDataSource",
+										"parameters": {
+											"uri": "'\\/optionValues/MPC/${context.targetInstance}/vlans'",
+											"mpcHPEManaged":"mpcHPEManaged.value",
+											"mpcDatacenter":"mpcDatacenter.value",
+											"compartment" : "mpcPropelOrgCompartmentName.value"
+										}
+									}
+								}
+							}
+						]
+					},
+					{
+						"id":"fieldset2",
+						"name": "Virtual Machine Configuration",
+						"type":"FIELDSET",
+						"active": true,
+						"fields":[
+						    {
+								"id": "mpcSLA",
+								"name": "Service Level",
+								"type": "DROPDOWN_LIST",
+								"activeExpression": "mpcCreateEntityInSecondarySiteOfDC.value==false || mpcCreateEntityInSecondarySiteOfDC.value",
+								"value": "99.9%",
+								"constraints": {
+										"requiredExpression": "true",
+										"dynamicAvailableValues": {
+										"dataSourceId": "sxDataSource",
+										"parameters": {
+											"uri": "'\\/optionValues/MPC/${context.targetInstance}/sla'",
+											"secondarySite":"mpcCreateEntityInSecondarySiteOfDC.value",
+											"hypervisor":"'Hyper-V'"
+										}
+									}
+								}
+							},
+							{
+								"id": "mpcVirtualMachineCpu",
+								"name": "CPU",
+								"type": "DROPDOWN_LIST",
+								"activeExpression": "(mpcHPEManaged.value == true || mpcHPEManaged.value == false) && mpcDatacenter.value && mpcSLA.value && (mpcCreateEntityInSecondarySiteOfDC.value==false || mpcCreateEntityInSecondarySiteOfDC.value)",
+								"constraints": {
+									"multipleSelection": false,
+									"requiredExpression": "true",
+									"dynamicAvailableValues": {
+										"dataSourceId": "sxDataSource",
+										"parameters": {
+											"uri": "'\\/optionValues/MPC/${context.targetInstance}/vmcpuhyperv'",
+											"hpeManaged": "mpcHPEManaged.value",											
+											"flavor_type":"'Virtual'",
+											"sla":"mpcSLA.value",
+											"mpcDatacenter":"mpcDatacenter.value",
+											"compartment" : "mpcPropelOrgCompartmentName.value",
+											"os_type":<#if CDMPCCId == "hyperVVirtualMachineRedHat">"'RHEL'"</#if><#if CDMPCCId == "hyperVVirtualMachineWindows">"'Windows'"</#if><#if CDMPCCId == "hyperVVirtualMachineSuse">"'SUSE'"</#if>,
+											"secondarySite":"mpcCreateEntityInSecondarySiteOfDC.value"
+										}
+									}
+								}
+							},
+							{
+								"id": "mpcVirtualMachineMemory",
+								"name": "Memory",
+								"type": "DROPDOWN_LIST",
+								"activeExpression": "mpcVirtualMachineCpu.value",
+								"constraints": {
+									"multipleSelection": false,
+									"requiredExpression": "true",
+									"dynamicAvailableValues": {
+										"dataSourceId": "sxDataSource",
+										"parameters": {
+											"uri": "'\\/optionValues/MPC/${context.targetInstance}/vmmemoryhyperv'",
+											"hpeManaged": "mpcHPEManaged.value",											
+											"flavor_type":"'Virtual'",
+											"sla":"mpcSLA.value",
+											"mpcDatacenter":"mpcDatacenter.value",
+											"compartment" : "mpcPropelOrgCompartmentName.value",
+											"cpus" : "mpcVirtualMachineCpu.value",
+											"os_type":<#if CDMPCCId == "hyperVVirtualMachineRedHat">"'RHEL'"</#if><#if CDMPCCId == "hyperVVirtualMachineWindows">"'Windows'"</#if><#if CDMPCCId == "hyperVVirtualMachineSuse">"'SUSE'"</#if>,
+											"secondarySite":"mpcCreateEntityInSecondarySiteOfDC.value"
+										}
+									}
+								}
+							},							
+							{
+								"id": "mpcImage",
+								"name": <#if CDMPCCId == "hyperVVirtualMachineRedHat">"Hyper-V Red Hat® Enterprise Linux® Version"</#if><#if CDMPCCId == "hyperVVirtualMachineWindows">"Hyper-V Microsoft® Windows Server® Version"</#if><#if CDMPCCId == "hyperVVirtualMachineSuse">"Hyper-V SUSE® Linux Enterprise Server® Version"</#if>,
+								"type": "DROPDOWN_LIST",
+								"activeExpression": "mpcVirtualMachineMemory.value",
+								"constraints": {
+									"multipleSelection": false,
+									"requiredExpression": "true",
+									"dynamicAvailableValues": {
+										"dataSourceId": "sxDataSource",
+										"parameters": {
+											"uri": "'\\/optionValues/MPC/${context.targetInstance}/vmimageshyperv'",
+											"sla":"mpcSLA.value",
+											"hpeManaged": "mpcHPEManaged.value",										
+											"flavor_type":"'Virtual'",
+											"secondarySite": "mpcCreateEntityInSecondarySiteOfDC.value",
+											"mpcDatacenter":"mpcDatacenter.value",
+											"memory_flavorId" : "mpcVirtualMachineMemory.value",
+											"compartment" : "mpcPropelOrgCompartmentName.value",
+											"os_type":<#if CDMPCCId == "hyperVVirtualMachineRedHat">"'RHEL'"</#if><#if CDMPCCId == "hyperVVirtualMachineWindows">"'Windows'"</#if><#if CDMPCCId == "hyperVVirtualMachineSuse">"'SUSE'"</#if>
+										}
+									}
+								}
+							}							
+						]
+					}
+                ]
+            }
+</#macro>
+</#escape>

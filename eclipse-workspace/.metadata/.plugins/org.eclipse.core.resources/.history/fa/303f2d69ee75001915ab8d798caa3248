@@ -1,0 +1,1710 @@
+{
+    // aggregation
+    "listLanguages": [
+        {
+            "label": "List Languages",
+            "resultTemplate": "aggregation/listLanguagesResponse.ftl"
+        }
+    ],
+    "getAggregationFeatures": [
+        {
+            "label": "Get Aggregation Features",
+            "resultTemplate": "aggregation/getAggregationFeatures.ftl"
+        }
+    ],
+    "listCatalogs": [
+        {
+            "label": "List Catalogs",
+            "resultTemplate": "aggregation/listCatalogsResponse.ftl"
+        }
+    ],
+    "listCategories": [
+        {
+            "label": "List Categories",
+            "resultTemplate": "aggregation/listCategoriesResponse.ftl"
+        }
+    ],
+    "getOptionValues": [
+        {
+            "label": "Add authDataCenter property for authentication",
+            "resultTemplate": "getAuthInfo.ftl"
+        },
+        {
+            "label": "Get Option Values",
+            "resultTemplate": "getOptionValuesResponse.ftl"
+        }
+    ],
+    "getItemsOptionValues": [
+        {
+            "label": "Get Option Values",
+            "requestUrlTemplate": "aggregation/getItemsOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getItemsOptionValuesRequest.ftl",
+            "responseTemplate": "aggregation/getItemsOptionValuesResponse.ftl",
+            "method": "POST"
+        }
+    ], 
+    "getCustomerDedicatedFlexibleVMFlavors" : [
+    	{
+            "label": "Get Customer Dedicated Flavors for Flexible VM",
+            "requestUrlTemplate": "aggregation/getCustomerDedicatedFlavorsUrl.ftl",            
+            "responseTemplate": "aggregation/getCustomerDedicatedFlavorsResponse.ftl",
+            "method": "GET"
+        }
+    ],   
+    "getPhysicalServerHardwareOptionValues": [
+        {
+            "label": "Get Flavor Types",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/queryFlavorsUrl.ftl",
+            "responseTemplate": "service-instance/queryFlavorsResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get VMSize Option Values",
+            "requestUrlTemplate": "aggregation/getPhysicalServerHardwareUrl.ftl",
+            "requestTemplate": "aggregation/getPhysicalServerHardwareRequest.ftl",
+            "responseTemplate": "aggregation/getPhysicalServerHardwareResponse.ftl",
+            "method": "POST"
+        }
+    ],
+    "getPhysicalNodeHardwareOsCluster": [
+        {
+            "label": "Get Flavor Types",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/queryFlavorsUrl.ftl",
+            "responseTemplate": "service-instance/queryFlavorsResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get VMSize Option Values",
+            "requestUrlTemplate": "aggregation/getPhysicalServerHardwareUrl.ftl",
+            "requestTemplate": "aggregation/getPhysicalServerHardwareRequest.ftl",
+            "responseTemplate": "aggregation/getPhysicalServerHardwareResponse.ftl",
+            "method": "POST"
+        }
+    ],
+    "getNextServerWithEVAStorage" : [
+            {
+            	"label": "Add authDataCenter property for authentication",
+            	"resultTemplate": "getAuthInfo.ftl"
+        	},
+            {
+            "label": "Get Next Server Values with Same Eva Storage",
+            "requestUrlTemplate": "service-instance/getPhysicalServerDetailUrl.ftl",
+            "responseTemplate": "service-instance/getPhysicalServerDetailResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ], 
+    "getVpcFlavorDetail" : [
+        {
+            "label": "Add authDataCenter property for authentication",
+            "resultTemplate": "getAuthInfo.ftl"
+        },
+    	{
+            "label": "Get Flavor Types",
+            "requestUrlTemplate": "aggregation/getFlexibleVMFlavorDetailUrl.ftl",
+            "responseTemplate": "aggregation/getFlexibleVMFlavorDetailResponse.ftl",
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,404]
+        }
+    ], 
+    "getFlexibleVMImageOptions" : [
+        {
+            "label": "Get Client Provided Image",
+            "requestUrlTemplate": "aggregation/getClientProvidedImageUrl.ftl",
+            "responseTemplate": "aggregation/getClientProvidedImageResponse.ftl",
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,404]
+        },
+        {
+            "label": "Get Flavor detail",
+            "resultTemplate": "aggregation/getFlexibleVMFlavorsResponse.ftl"            
+        },
+        {
+        	"label": "Get Customer Specific Image",
+            "requestUrlTemplate": "aggregation/getCustomerSpecificImageUrl.ftl",
+            "responseTemplate": "aggregation/getCustomerSpecificImageResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get VMImage Option Values",
+            "requestUrlTemplate": "aggregation/getMachineImageOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getMachineImageOptionValuesRequest.ftl",
+            "responseTemplate": "aggregation/getFlexibleVMOsImageOptionsResponse.ftl",
+            "method": "POST"
+        }
+    ],    
+    "getPhysicalServerImageOptionValues": [
+        {
+            "label": "Get Flavor Types",
+            "requestUrlTemplate": "service-instance/getMultiFlavorsDetailUrl.ftl",
+            "responseTemplate": "service-instance/getMultiFlavorsDetailResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get VMImage Option Values",
+            "requestUrlTemplate": "aggregation/getPhysicalServerImageOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getPhysicalServerImageOptionValuesRequest.ftl",
+            "responseTemplate": "aggregation/getPhysicalServerImageOptionValuesResponse.ftl",
+            "method": "POST"
+        }
+    ],
+    "getPhysicalOsClusterImage" : [
+    	{
+    		"label": "Get Physical Option Values",
+            "requestUrlTemplate": "aggregation/getPhysicalOsClusterImageOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getPhysicalOsClusterImageOptionValuesRequest.ftl",
+            "responseTemplate": "aggregation/getPhysicaOsClusterImageOptionValuesResponse.ftl",
+            "method": "POST"
+    	}
+    ],
+    "getFlavorDetailById": [
+        {
+            "label": "Get Option Values",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "vpc/flavor/getFlavorDetailByIdUrl.ftl",
+            "responseTemplate": "vpc/flavor/getFlavorDetailByIdResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getServerDetailById": [
+        {
+            "label": "Get Option Values",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "vpc/server/getServerDetailByIdUrl.ftl",
+            "responseTemplate": "vpc/server/getServerDetailByIdResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getVirutalServerDetailById": [
+        {
+            "label": "Get Option Values",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "vpc/server/getVirtualServerDetailByIdUrl.ftl",
+            "responseTemplate": "vpc/server/getVirtualServerDetailByIdResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getImagesOptionValues": [
+        {
+            "label": "Get Option Values",
+            "requestUrlTemplate": "aggregation/getImagesOptionValuesUrl.ftl",
+            "responseTemplate": "aggregation/getImagesOptionValuesResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVlansOptionValues": [
+        {
+            "label": "Get Option Values",            
+            "requestUrlTemplate": "aggregation/getVlansOptionValuesUrl.ftl",
+            "responseTemplate": "aggregation/getVlansOptionValuesResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getDataCentersOptions": [
+        {
+            "label": "Get Datacenters",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "aggregation/getDatacentersUrl.ftl",
+            "responseTemplate": "aggregation/getDatacentersOptionsResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVirtualMachineCpuOptions":[
+        {
+            "label": "Get CPU Option Values",
+            "resultTemplate": "aggregation/getVirtualMachineCpuOptionResponse.ftl"
+        }
+    ],
+    "getVirtualMachineResizeCpuOptions" : [
+        {
+            "label": "Get Available Flavors From V2",
+            "requestUrlTemplate": "service-instance/getResizeFlavorsUrl.ftl",
+            "responseTemplate": "service-instance/getVMResizeCpuOptionResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVirtualMachineResizeMemoryOptions" : [
+        {
+            "label": "Get Available Flavors From V2",
+            "requestUrlTemplate": "service-instance/getResizeFlavorsUrl.ftl",
+            "responseTemplate": "service-instance/getVMResizeMemoryOptionResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVirtualMachineMemoryOptions":[
+        {
+            "label": "Get Memory Option Values",
+            "resultTemplate": "aggregation/getVirtualMachineMemoryOptionResponse.ftl"
+        }
+    ],
+    "getSlaOptionValues":[
+    	{
+            "label": "Get SLA Option Values",
+            "resultTemplate": "aggregation/getSlaOptionValuesResult.ftl"
+        }
+    ],
+    "getCartPrice": [
+        {
+            "label": "Check item type",
+            "resultTemplate": "pricing/getCartPrice.ftl"
+        }
+    ],
+    "getItemPrice": [
+        {
+            "label": "Prepare billing products",
+            "resultTemplate": "pricing/preparePricingProducts.ftl"
+        },
+        {
+            "label": "Calculate Price",
+            "customStep": "calculatePrice"
+        }
+    ],
+    "getServiceInstancePrice": [
+        {
+            "label": "Calculate Price",
+            "customStep": "calculatePrice"
+        }
+    ],
+    "getServiceInstanceActionPrice": [
+        {
+            "label": "Calculate Price",
+            "customStep": "calculatePrice"
+        }
+    ],
+    "listOfferings": [
+        {
+            "label": "List Offerings",
+            "requestUrlTemplate": "aggregation/listOfferingsUrl.ftl",
+            "responseTemplate": "aggregation/listOfferingsResult.ftl"
+        }
+    ],
+    "getCatalogItems": [
+        {
+            "label": "List Offerings",
+            "resultTemplate": "testui/listOfferingsResult.ftl"
+        }
+    ],
+    "getOffering": [
+        {
+            "label": "Get Offering",
+            "requestUrlTemplate": "aggregation/getOfferingUrl.ftl",
+            "responseTemplate": "aggregation/getOfferingResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getOfferingIcon": [
+        {
+            "label": "Get Offering Icon",
+            "customStep": "getStaticIcon"
+        }
+    ],
+    "getBasicActionOffering": [
+        {
+            "label": "Get basic action offering (built-in actions such as cancel, transfer owner etc.)",
+            "resultTemplate": "aggregation/getBasicActionOfferingResponse.ftl"
+        }
+    ],
+    "getInstanceForm": [
+        {
+            "label": "Get instance form",
+            "resultTemplate": "getInstanceFormResponse.ftl"
+        }
+    ],
+    "createOrder": [
+        {
+            "label": "Create general request",
+            "resultTemplate": "order/createGeneralReq.ftl"
+        },
+        {
+            "label": "Setup Notifications",
+            "notifyTemplate": "order/r2fNotifyTemplate.ftl",
+            "callbackTemplate": "order/r2fCallbackTemplate.ftl",
+            "operationName": "checkOrder",
+            "idSelector": "$.orderInfo.id",
+            "entitySelector": "$.entity",
+            "firstRunImmediately": true
+        },
+        {
+            "label": "Sync service instance",
+            "customStep": "syncServiceInstance"
+        }
+    ],
+    "createServiceRequest" : [        
+        {
+            "label": "Get Authentication Info",
+            "resultTemplate": "order/getAuthInfoFromItemResponse.ftl"
+        },
+        {
+            "label": "Create Property Map",
+            "resultTemplate": "order/createPropertyMap.ftl"
+        },
+        {
+            "label": "Create Server",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "order/createServerUrl.ftl",
+            "requestTemplate": "order/createServerRequest.ftl",
+            "responseTemplate": "order/createServerResponse.ftl",
+            "method": "POST"
+        },
+        {
+            "label": "Create Storage",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "order/createStorageUrl.ftl",
+            "requestTemplate": "order/createStorageRequest.ftl",
+            "responseTemplate": "order/createStorageResponse.ftl",
+            "method": "POST"
+        },
+        {
+            "label": "Attach Virtual Storage",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "order/attachVirtualStorageUrl.ftl",
+            "requestTemplate": "order/attachStorageRequest.ftl",
+            "ignoreResponse": true,
+            "method": "POST",
+            "reportSuccessForHttpStatuses": [200,202,400,401,415,500,509]
+        },
+        {
+            "label": "Attach Physical Storage",
+            "inputSelector": "$.propertyMap.serverList",
+            "inputName": "attachToServer",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "order/attachPhysicalStorageUrl.ftl",
+            "requestTemplate": "order/attachStorageRequest.ftl",
+            "ignoreResponse": true,
+            "method": "POST",
+            "reportSuccessForHttpStatuses": [200,202,400,401,415,500,509]
+        },        
+        {
+            "label": "Add Billing data to OrderInfo",
+            "resultTemplate": "pricing/addBillingDataToOrderInfo.ftl"
+        },        
+        {
+            "label": "Add entity properties orderInfo",
+            "resultTemplate": "order/addPropertiesToOrderInfo.ftl"
+        },                
+        {
+            "label": "Store provisioning entity information",
+            "customStep": "mpcStoreProvisioningEntity"          
+        },        
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["entity.id"],
+            "cacheInterruptTime": 1200
+        },
+        {
+            "label": "Save Order Info",
+            "customStep": "saveOrderInfo"
+        },
+        {
+            "label":"Save Order Cascade Operation Info",
+            "customStep": "saveOrderCascadeOperationInfo"
+        }
+    ],
+    "loadOrderInfo": [
+        {
+            "label": "Load Order Info",
+            "customStep": "loadOrderInfo"
+        }
+    ],
+    "resizeNodeByVirtualStorage": [
+        {
+            "label": "Load Order Server Info",
+            "customStep": "loadServerOrderInfo"
+        }
+    ],
+    "temporaryInterruptCaching": [
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["idForInterrupting"],
+            "cacheInterruptTime": 1200
+        }
+    ],
+    "createActionRequest": [
+        {
+            "label": "Load Order Info",
+            "customStep": "loadOrderInfo"
+        },
+        {
+            "label": "Add authDataCenter property for authentication",
+            "resultTemplate": "getAuthInfoFromOrderInfo.ftl"
+        },
+        {
+            "label": "Execute Service Action",
+            "resultTemplate": "service-instance/executeActionResponse.ftl"
+        },
+        {
+            "label": "Get Server Detail full entity for checkOrder",
+            "requestUrlTemplate": "service-instance/getServerDetailUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Storage Detail full entity for checkOrder",
+            "requestUrlTemplate": "service-instance/getStorageDetailUrl.ftl",
+            "responseTemplate": "service-instance/getStorageDetailResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "checkOrder": [
+        {
+            "label": "Load Order Info",
+            "customStep": "loadOrderInfo"
+        },
+        {
+            "label": "Load Subscription Info",
+            "customStep": "loadSubInfo"
+        },
+        {
+            "label": "Transform Entity Detail",
+            "resultTemplate": "order/checkOrderResponse.ftl"
+        },
+        {
+            "label": "Cancel Storage Order",
+            "resultTemplate": "pricing/cancelStorageOrder.ftl"
+        },
+        {
+            "label": "Save Subscription Info",
+            "customStep": "saveSubInfo"
+        },
+        {
+            "label": "Save Order Info",
+            "customStep": "saveOrderInfo"
+        }
+    ],
+    "getServiceInstanceForCreate": [
+        {
+            "label": "Load Order Info",
+            "customStep": "loadOrderInfo"
+        },
+        {
+            "label": "Get Authentication Info",
+            "resultTemplate": "getAuthInfoFromOrderInfo.ftl"
+        },
+        {
+            "label": "Get Server Detail if missing",
+            "requestUrlTemplate": "service-instance/getServerDetailIfMissingUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailIfMissingResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Server Detail",
+            "resultTemplate": "service-instance/getServerDetailResult.ftl"
+        },
+        {
+            "label": "add deleted state for server",
+            "resultTemplate": "service-instance/addDeletedState.ftl"
+        },
+        {
+            "label": "skip if server does not exist",
+            "resultTemplate": "service-instance/skipIfServerDoesNotExistResult.ftl"
+        },
+        {
+            "label": "Get Flavor Type",
+            "requestUrlTemplate": "service-instance/getFlavorTypeUrl.ftl",
+            "responseTemplate": "service-instance/getFlavorTypeResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Volumes Attached To Server",
+            "resultTemplate": "service-instance/getVolumeAttachmentsResult.ftl"
+        },
+        {
+            "label": "Get Storage Detail if Missing",
+            "requestUrlTemplate": "service-instance/getVolumeDetailIfMissingUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeDetailIfMissingResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Storage Detail",
+            "resultTemplate": "service-instance/getStorageDetailResult.ftl"
+        },
+        {
+            "label": "Get VMImage Option Values",
+            "resultTemplate": "service-instance/getMachineImageOptionValuesResult.ftl"
+        },
+        {
+            "label": "Get Service Instance",
+            "resultTemplate": "service-instance/getServiceInstanceResponse.ftl"
+        }
+    ],
+    "getServiceInstanceForUpdate": [
+        {
+            "label": "Unregister Entity",
+            "customStep": "unregisterEntity"
+        },        
+        {
+            "label": "Load Order Info",
+            "customStep": "loadOrderInfo"
+        },
+        { 
+        	"label": "Delete delete-in-propel storage entity",
+        	"customStep": "deleteDeletedServerInfo"
+        },
+        {
+            "label": "Update Resize Storage mpcBamEvent",
+            "customStep": "updateResizeEvent"
+        },
+        {
+            "label": "Get Authentication Info",
+            "resultTemplate": "getAuthInfoFromOrderInfo.ftl"
+        },
+        {
+            "label": "Get Server Detail if missing",
+            "requestUrlTemplate": "service-instance/getServerDetailIfMissingUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailIfMissingForInstanceUpdateResponse.ftl",
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,204]
+        },
+        {
+            "label": "Transform Server Detail",
+            "resultTemplate": "service-instance/getServerDetailResult.ftl"
+        },
+        {
+            "label": "Get EVA Volumes",
+            "customStep": "evaVolumes"
+        },
+        {
+            "label": "Get Server Detail Image",
+            "requestUrlTemplate": "service-instance/getServerImageDetailUrl.ftl",
+            "responseTemplate": "service-instance/getServerImageDetailResponse.ftl",
+            "method": "GET"
+        },        
+        {
+            "label": "add deleted state for server",
+            "resultTemplate": "service-instance/addDeletedState.ftl"
+        },
+        {
+            "label": "skip if server does not exist",
+            "resultTemplate": "service-instance/skipIfServerDoesNotExistResult.ftl"
+        },
+        {
+            "label": "Get Flavor Type",
+            "requestUrlTemplate": "service-instance/getFlavorTypeUrl.ftl",
+            "responseTemplate": "service-instance/getFlavorTypeResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Volumes Attached To Server",
+            "resultTemplate": "service-instance/getVolumeAttachmentsResult.ftl"
+        },
+        {
+            "label": "Get Storage Detail if Missing",
+            "requestUrlTemplate": "service-instance/getVolumeDetailIfMissingUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeDetailIfMissingResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Storage Detail",
+            "resultTemplate": "service-instance/getStorageDetailResult.ftl"
+        },
+        {
+            "label": "Get VMImage Option Values",
+            "resultTemplate": "service-instance/getMachineImageOptionValuesResult.ftl"
+        },
+        {
+            "label": "Get Service Instance",
+            "resultTemplate": "service-instance/getServiceInstanceResponse.ftl"
+        },
+        {
+            "label": "Eval Watched Entities",
+            "customStep": "evalWatchList"
+        }
+    ],
+    "getVirtualVolumeServers": [
+        {
+            "label": "Get Servers Attached To Virtual Storage",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getVirtualVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getVirtualVolumeServersResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getPhysicalVolumeServers": [
+        {
+            "label": "Get Servers Attached To Physical Storage",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getPhysicalVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getPhysicalVolumeServersResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getVirtualVolumeServersCached": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 1200,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.targetInstance",
+                "volumeId"
+            ]
+        },
+        {
+            "label": "Get Servers Attached To Virtual Storage",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getVirtualVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getVirtualVolumeServersResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getPhysicalVolumeServersCached": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 1200,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.targetInstance",
+                "volumeId"
+            ]
+        },
+        {
+            "label": "Get Servers Attached To Physical Storage",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getPhysicalVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getPhysicalVolumeServersResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getVolumeAttachments": [
+        {
+            "label": "Get Volumes Attached To Server",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeAttachmentsResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getVolumeAttachmentsCached": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 1200,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.targetInstance",
+                "orderInfo.id"
+            ]
+        },
+        {
+            "label": "Get Volumes Attached To Server",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeAttachmentsResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getVolumeDetail": [       
+        {
+            "label": "Get Volumes Detail",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "vpc/storage/getVolumeDetailUrl.ftl",
+            "responseTemplate": "vpc/storage/getVolumeDetailResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getVolumeTypeDetail": [       
+        {
+            "label": "Get Volumes Detail",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "vpc/storage/getVolumeTypeUrl.ftl",
+            "responseTemplate": "vpc/storage/getVolumeTypeResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getServerSubStatus": [
+        {
+            "label": "Get Server SubStatus",
+            "requestUrlTemplate": "service-instance/getServerSubStatusUrl.ftl",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "responseTemplate": "service-instance/getServerSubStatusResponse.ftl",
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,400,409,501],
+            "keepResultOnly": true
+        }
+    ],
+    "getServerSubStatusCached": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 1200,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.targetInstance",
+                "orderInfo.id"
+            ]
+        },
+        {
+            "label": "Get Server SubStatus",
+            "requestUrlTemplate": "service-instance/getServerSubStatusUrl.ftl",
+            "responseTemplate": "service-instance/getServerSubStatusResponse.ftl",
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,400,409],
+            "keepResultOnly": true
+        }
+    ],
+    "getFlavorTypeCached": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 3600,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.targetInstance",
+                "serverInfo.flavorId"
+            ]
+        },
+        {
+            "label": "Get Flavor Type",
+            "requestUrlTemplate": "service-instance/getFlavorTypeUrl.ftl",
+            "responseTemplate": "service-instance/getFlavorTypeResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "getMachineImageOptionValuesCached": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 3600,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.targetInstance",
+                "serverInfo.managementType",
+                "serverInfo.flavorType",
+                "serverInfo.flavorId",
+                "serverInfo.osType"
+            ]
+        },
+        {
+            "label": "Get VMImage Option Values",
+            "requestUrlTemplate": "aggregation/getMachineImageOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getMachineImageOptionValuesRequestForSubscription.ftl",
+            "responseTemplate": "aggregation/getMachineImageOptionValuesResponseForSubscription.ftl",
+            "method": "POST",
+            "keepResultOnly": true
+        }
+    ],
+    "getComponentIcon": [
+        {
+            "label": "Retrieve component icon",
+            "customStep": "getStaticIcon"
+        }
+    ],
+    "getServiceInstanceActionPresets": [
+        {
+            "label": "Get action form presets",
+            "resultTemplate": "service-instance/getServiceInstanceActionPresetsResponse.ftl"
+        }
+    ],
+    "getAttachedVolumeDetail": [
+        {
+            "label": "Get Attached Volume Detail",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getVolumeDetailUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeDetailResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVolumesOptionsForAttaching": [
+        {
+            "label": "Get Filtered Volumes",
+            "requestUrlTemplate": "aggregation/getFilteredStoragesUrl.ftl",
+            "responseTemplate": "aggregation/getFilteredStoragesResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Site from Server Detail",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "aggregation/getServerDetailByIdUrl.ftl",
+            "responseTemplate": "aggregation/getServerSiteResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Volume Types",
+            "requestUrlTemplate": "aggregation/getVolumeTypesForSiteUrl.ftl",
+            "responseTemplate": "aggregation/getVolumeTypesForSiteResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Volumes Option Values",
+            "requestUrlTemplate": "service-instance/getVolumesOptionValuesUrl.ftl",
+            "responseTemplate": "service-instance/getVolumesOptionValuesResponse.ftl",
+            "method": "GET"
+        }
+    ],    
+    "getServerAttachments": [
+        {
+            "label": "Get Filtered Volumes",
+            "requestUrlTemplate": "aggregation/getFilteredStoragesUrl.ftl",
+            "responseTemplate": "aggregation/getFilteredStoragesResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Server->Volume Attachments",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getServerAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getServerAttachmentsResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getServerAttachmentsOptionValues": [
+    	{
+            "label": "Get Filtered Volumes",
+            "requestUrlTemplate": "aggregation/getFilteredStoragesUrl.ftl",
+            "responseTemplate": "aggregation/getFilteredStoragesResponse.ftl",
+            "method": "GET"
+        },
+    	{
+    		"label": "Get Server->Volume Attachments Option Values",
+            "requestUrlTemplate": "service-instance/getServerAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getServerAttachmentsOptionValuesResponse.ftl",
+            "method": "GET"
+    	}        
+    ],
+    "getServerAttachmentDetail": [        
+        {
+            "label": "Get Server->Volume Attachment Detail",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getServerAttachmentDetailUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeDetailResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getEVAVolumesOptionsForCancel": [
+        {
+            "label": "Get EVA Server Detail",
+            "requestUrlTemplate": "service-instance/getServerDetailUrlForEvaVolumes.ftl",
+            "responseTemplate": "service-instance/getServerDetailForEvaVolumesResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Tranform EVA Volumes",
+            "customStep": "evaVolumesForCancel"
+        },
+        {
+            "label": "Get EVA Volume Options",
+            "resultTemplate": "service-instance/getEVAVolumesOptionValuesResponse.ftl"
+        }
+    ],
+    "cancelEVAStorage": [
+        {
+        	"label": "Handle EVA storage with Server",
+        	"resultTemplate": "service-instance/cancelEVAStorageResponse.ftl"
+        }
+    ],
+    "updateEvaTagForServer": [
+    	{
+    		"label": "Update Tag for Server",
+    		"requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "order/updateEvaStorageVolumeTagsUrl.ftl",
+            "requestTemplate": "order/updateEvaStorageVolumeBillingPairRequest.ftl",
+            "method": "PUT"
+    	}
+    ],
+    "cancelEVAStorageOnLastServer": [
+    	{
+        	"label": "Check Optimist Lock For Eva Storage Volume",
+            "customStep": "checkEvaStorageVolume"
+        },
+        {
+        	"label": "Get RWS Infos",
+            "customStep": "getRwsInfos4CreateCancelTicket"
+        },
+        {
+            "label": "Send Cancel EVA Ticket",
+            "requestUrlTemplate": "ticket/srcInteractionUrl.ftl",
+            "requestTemplate": "ticket/createTicketEVA.ftl",
+            "responseTemplate": "ticket/createInteractionResponse.ftl",
+            "method": "POST",
+            "header-Accept": "application/json",
+            "header-Content-Type": "application/xml"
+        },
+        {
+        	"label": "Check RWS API Return",
+        	"customStep": "checkRwsApiReturn"
+        },
+        {
+            "label": "Store EVA Storage Detail",
+            "customStep": "storeEvaStorageDetail"
+        }
+    ],
+    "getServersOptionValues": [
+        {
+        	"label": "Get Filtered Servers",
+            "requestUrlTemplate": "aggregation/getFilteredServersUrl.ftl",
+            "responseTemplate": "aggregation/getFilteredServersResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Servers Option Values",
+            "requestUrlTemplate": "service-instance/getServersOptionValuesUrl.ftl",
+            "responseTemplate": "service-instance/getServersOptionValuesResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getServerPhysicalVolumesOptionValues" : [
+     	{
+            "label": "Get Server Physical Volumes",
+            "requestUrlTemplate": "service-instance/getServerPhysicalVolumeOptionValuesUrl.ftl",
+            "responseTemplate": "service-instance/getServerPhysicalVolumeOptionValuesResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getResizeItems": [
+        {
+            "label": "Get Available Flavors From V2",
+            "requestUrlTemplate": "service-instance/getResizeFlavorsUrl.ftl",
+            "responseTemplate": "service-instance/getResizeFlavorsResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Get Available Size Option Values",
+            "requestUrlTemplate": "aggregation/getMachineSizeOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getAvailableMachineSizeOptionValuesRequest.ftl",
+            "responseTemplate": "aggregation/getAvailableMachineSizeOptionValuesResponse.ftl",
+            "method": "POST"
+        }
+    ],
+    "getPhysicalVolumeAttachments": [
+        // called from "getServersOptionValues"
+        {
+            "label": "Get Servers Attached To Physical Volume",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getPhysicalVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getPhysicalVolumeServerIdsResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVolumeAttachmentsOptionValues": [
+        {
+            "label": "Get Volume Attachment Option Values",
+            "requestUrlTemplate": "service-instance/getPhysicalVolumeAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeAttachmentsOptionValuesResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getClosedTicketforEVA": [
+        {
+            "label": "Get All Closed Ticket for EVA",
+            "requestUrlTemplate": "ticket/getTicketDetailIfMissingUrl.ftl",
+            "requestTemplate": "ticket/retrieveTicketForDetail.ftl",
+            "responseTemplate": "ticket/getDetailIfMissingResponse.ftl",
+            "method": "POST",
+            "header-Accept": "application/json",
+            "header-Content-Type": "application/xml"
+        },
+        {
+        	"label": "Check RWS API Return",
+        	"customStep": "checkRwsApiReturnLog"
+        }
+    ],
+    "getRwsConfigs":[
+        {
+        	"label": "Get RWS Infos",
+            "customStep": "getRwsInfos"
+        }
+    ],
+    "updateNextEVAServer": [
+        {
+            "label": "Add authDataCenter property for authentication",
+            "resultTemplate": "getAuthInfo.ftl"
+        },
+    	{
+    		"label": "Send Update Jbilling Event",
+    		"customStep": "fireUpdateEvaStorageVolumeBillingEvent"
+    	},
+    	{
+    		"label": "Update Tag for Server",
+    		"requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "order/updateEvaStorageVolumeTagsUrl.ftl",
+            "requestTemplate": "order/updateEvaStorageVolumeBillingPairRequest.ftl",
+            "method": "PUT"
+    	}
+    ],
+    "getAllEntitiesCached": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 60,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.targetInstance"
+            ]
+        },
+        {
+            "label": "Get All Tracked Entities",
+            "customStep": "getAllTrackedEntities"
+        },
+        {
+            "label": "Get All Watched Entities",
+            "customStep": "loadWatchList"
+        },
+        {
+            "label": "Get Server IDs that storage resized",
+            "customStep": "getResizedServerEntities"
+        },
+        {
+        	"label": "Load Delete-In-Progress Servers' IDs",
+        	"customStep": "loadTrackedServerIds"
+        },
+        {
+            "label": "Get Compartments",
+            "resultTemplate": "order/getAllCompartments.ftl"
+        },
+        {
+            "label": "Update Eva Storage Volumes",
+            "resultTemplate": "order/updateEvaStorageVolumes.ftl"
+        },
+        {
+            "label": "Get Updated Servers in all datacenters",
+            "resultTemplate": "order/getUpdatedServersInAllDatacenterResponse.ftl"
+        },
+        {
+            "label": "Update All Closed Eva Storage Volume",
+            "resultTemplate": "order/updateAllClosedEvaStorageVolumes.ftl"
+        },
+        {
+            "label": "Get Updated Virtual Storages",
+            "resultTemplate": "order/getUpdatedVirtualStoragesInAllDCResponse.ftl"
+        },
+        {
+            "label": "Get Updated Physical Storages",
+            "resultTemplate": "order/getUpdatedPhysicalStoragesInAllDCResponse.ftl"
+        },
+        {
+            "label": "Fire jBilling envents",
+            "customStep": "mpcFireJbillingEvent"
+        },
+        {
+            "label":"Get Changed Entities Order Cascade Operation Info",
+            "customStep": "loadChangedEntitiesOrderCascadeOperationInfo"
+        },
+        {
+            "label":"Execute Order Cascade Operation",
+            "customStep": "executeOrderCascadeOperation"
+        }
+    ],
+    "updateEvaStorageVolumes":[
+    	{
+            "label": "Get Canceling EVA volumes",
+            "customStep": "mpcGetOpenStatusEvaStorage"
+        },
+        {
+	    	"label":"Get RWS configs in related Organizations",
+	    	"resultTemplate": "ticket/getAllRwsConfigs.ftl"      
+        },
+        {
+            "label": "Get List for Closed EVA Tickets",
+            "resultTemplate": "ticket/getTicketDetailForClosedEVA.ftl"
+        }
+    ],
+    "deleteCurrentVolume" : [
+    	{
+        	"label": "Get RWS Infos",
+            "customStep": "getRwsInfos"
+        },
+        {
+            "label": "Send Cancel EVA Ticket",
+            "requestUrlTemplate": "ticket/srcInteractionUrlWithoutLock.ftl",
+            "requestTemplate": "ticket/createTicketEVA.ftl",
+            "responseTemplate": "ticket/createInteractionResponse.ftl",
+            "method": "POST",
+            "header-Accept": "application/json",
+            "header-Content-Type": "application/xml"
+        },
+        {
+        	"label": "Check RWS API Return",
+        	"customStep": "checkRwsApiReturn"
+        },
+        {
+        	"label":"Send Jbilling Event",
+        	"customStep": "fireCancelEvaStorageWithServerBillingEvent"
+        }
+    ],
+    "updateAllClosedEvaStorageVolume":[
+    	{
+            "label": "Fire Cancel Eva Storage jBilling Events",
+            "customStep": "fireCancelEvaStorageBillingEvents"
+        },
+        {
+        	"label": "Get All Eva Server To Updated Tags",
+            "resultTemplate": "order/getAllEvaServersToUpdateTags.ftl"
+        },
+        {
+            "label": "Update Eva Storage Volume Status To Closed",
+            "customStep": "updateEvaStorageVolumeStatus2Closed"
+        }
+    ],
+    "updateEvaStorageVolumeTags":[
+        {
+            "label": "Update Eva Storage Volume Tags",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "order/updateEvaStorageVolumeTagsUrl.ftl",
+            "requestTemplate": "order/updateEvaStorageVolumeRequest.ftl",
+            "method": "PUT"
+        }
+    ],
+    "getUpdatedVirtualStorageInOneDC":[
+        {
+            "label": "Get Updated Virtual Storages",
+            "requestUrlTemplate": "order/getUpdatedVirtualStoragesUrl.ftl",
+            "responseTemplate": "order/getUpdatedVirtualStoragesResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getUpdatedPhysicalStorageInOneDC":[
+        {
+            "label": "Get Updated Physical Storages",
+            "requestUrlTemplate": "order/getUpdatedPhysicalStoragesUrl.ftl",
+            "responseTemplate": "order/getUpdatedPhysicalStoragesResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getTiersOptionValues": [
+        {
+            "label": "Get Storage Type",
+            "requestUrlTemplate": "service-instance/getStorageTierUrl.ftl",
+            "responseTemplate": "service-instance/getStorageTierResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVolumeType": [
+        {
+            "label": "Get Storage Type",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getStorageTierUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeTypeResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "attachStorage": [
+        {
+            "label": "Execute 'Attach Storage' Service Action",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/attachStorageUrl.ftl",
+            "requestTemplate": "service-instance/attachStorageRequest.ftl",
+            "ignoreResponse": true,
+            "method": "POST"
+        },        
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["componentId","parameterMap.serverId","parameterMap.volumeId"],
+            "cacheInterruptTime": 1200
+        }
+    ],
+    "detachStorage": [
+        {
+            "label": "Execute 'Detach Storage' Service Action",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/detachStorageUrl.ftl",
+            "method": "DELETE",
+            "ignoreResponse": true,
+            "reportSuccessForHttpStatuses": [200,202]
+        }
+    ],
+    "cascadeAttachStorage":[
+        {
+            "label": "Cascade 'attach' Storage",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/attachStorageUrl.ftl",
+            "requestTemplate": "service-instance/attachStorageRequest.ftl",
+            "method": "POST",
+            "reportSuccessForHttpStatuses": [200,202,400,401,409,415,500,509]
+        }
+    ],
+    "attachStorageMultiple": [
+        {
+            "label": "Execute 'Attach Storage' Service Action",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/attachStorageUrl.ftl",
+            "requestTemplate": "service-instance/attachStorageRequest.ftl",
+            "ignoreResponse": true,
+            "method": "POST",
+            "reportSuccessForHttpStatuses": [200,202]
+        },
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["componentId","parameterMap.serverId","parameterMap.volumeId"],
+            "cacheInterruptTime": 1200
+        }
+    ],
+    "detachStorageMultiple": [
+        {
+            "label": "Execute 'Detach Storage' Service Action",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/detachStorageUrl.ftl",
+            "method": "DELETE",
+            "ignoreResponse": true,
+            "reportSuccessForHttpStatuses": [200,202]
+        }
+    ],
+    "getAttachmentId": [
+        // called from "detachStorage"
+        {
+            "label": "Get Attachment Id",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getServerAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getAttachmentIdResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getImageDetail": [
+        {
+            "label": "Add authDataCenter property for authentication",
+            "resultTemplate": "getAuthInfo.ftl"
+        },
+        {
+            "label": "Get Image Detail",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getImageDetailUrl.ftl",
+            "responseTemplate": "service-instance/getImageDetailResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVolumeId": [
+        {
+            "label": "Get Volume Id",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/getServerAttachmentsUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeIdResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "resizeStorage": [        
+        {
+            "label": "Execute 'Resize Storage' Service Action",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/resizeStorageUrl.ftl",
+            "requestTemplate": "service-instance/resizeStorageRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true
+        },
+        {
+            "label": "Update purchase order",
+            "customStep": "updatePurchaseOrder"
+        }
+        ,{
+            "label": "Retrieve server info which storage attached to",
+            "resultTemplate": "service-instance/getVolumeAttachedToServerResult.ftl"
+        }
+        ,{
+        
+            "label": "Save to db which storage attached to",
+            "customStep": "storeResizeEvent"
+        }
+    ],
+    "executePlainServerAction": [
+        {
+            "label": "Execute Service Action On Server",
+            "requestUrlTemplate": "service-instance/executePlainServerActionUrl.ftl",
+            "requestTemplate": "service-instance/executePlainServerActionRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true
+        },
+        {
+            "label": "Get Server Detail",
+            "requestUrlTemplate": "service-instance/getServerDetailForBillingUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailResponse.ftl",
+            "method": "GET"
+        },        
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["componentId"],
+            "cacheInterruptTime": 1200
+        }
+    ],
+    "executeStartServerAction": [
+        {
+            "label": "Execute Service Action On Server",
+            "requestUrlTemplate": "service-instance/executePlainServerActionUrl.ftl",
+            "requestTemplate": "service-instance/executePlainServerActionRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true
+        },
+        {
+            "label": "Get Server Detail",
+            "requestUrlTemplate": "service-instance/getServerDetailForBillingUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailResponse.ftl",
+            "method": "GET"
+        },        
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["componentId"],
+            "cacheInterruptTime": 1200
+        },
+        {
+            "label": "Sleep for 20 seconds",
+            "customStep": "sleepForSeconds",            
+            "sleepTimeInSeconds": 40
+        }
+    ],
+    "executeResumeServerAction": [
+        {
+            "label": "Execute Service Action On Server",
+            "requestUrlTemplate": "service-instance/executePlainServerActionUrl.ftl",
+            "requestTemplate": "service-instance/executePlainServerActionRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true
+        },
+        {
+            "label": "Get Server Detail",
+            "requestUrlTemplate": "service-instance/getServerDetailForBillingUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Update purchase order",
+            "customStep": "updatePurchaseOrder"
+        },
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["componentId"],
+            "cacheInterruptTime": 1200
+        },
+        {
+            "label": "Sleep for 20 seconds",
+            "customStep": "sleepForSeconds",            
+            "sleepTimeInSeconds": 20
+        }
+    ],
+    "executeSuspendServerAction": [
+        {
+            "label": "Execute Service Action On Server",
+            "requestUrlTemplate": "service-instance/executePlainServerActionUrl.ftl",
+            "requestTemplate": "service-instance/executePlainServerActionRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true
+        },
+        {
+            "label": "Get Server Detail",
+            "requestUrlTemplate": "service-instance/getServerDetailForBillingUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Update purchase order",
+            "customStep": "updatePurchaseOrder"
+        },
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["componentId"],
+            "cacheInterruptTime": 1200
+        },
+        {
+            "label": "Sleep for 20 seconds",
+            "customStep": "sleepForSeconds",
+            "sleepTimeInSeconds": 20
+        }
+    ],
+    "updateUser": [
+        {
+            "label": "Updates a user on a server (essentially the password of the user).",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/executeServerUserUrl.ftl",            
+            "requestTemplate": "service-instance/updateUserRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true,
+            "reportSuccessForHttpStatuses": [200]
+        }
+    ],
+    "createUser": [
+        {
+            "label": "Create a user on a server (essentially the password of the user).",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/executeServerUserUrl.ftl",
+            "requestTemplate": "service-instance/updateUserRequest.ftl",
+            "ignoreResponse": true,
+            "method": "POST",
+            "reportSuccessForHttpStatuses": [200]
+        }
+    ],
+    "deleteUser": [
+        {
+            "label": "Delete a user on a server (essentially the password of the user).",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/executeServerUserUrl.ftl",
+            "requestTemplate": "service-instance/deleteUserRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true,
+            "reportSuccessForHttpStatuses": [200,202]
+        }
+    ],
+    "resize": [        
+        {
+            "label": "Resize the server to the size requested, but only allowed for scaling up.",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/executeServerResizeUrl.ftl",
+            "requestTemplate": "service-instance/updateServerSizeRequest.ftl",
+            "method": "PUT",
+            "ignoreResponse": true,
+            "reportSuccessForHttpStatuses": [200]
+        },
+        {
+            "label": "Get Server Detail",
+            "requestUrlTemplate": "service-instance/getServerDetailUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailResponse.ftl",
+            "method": "GET"
+        },
+        {
+            "label": "Update purchase order",
+            "customStep": "updatePurchaseOrder"
+        },
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["componentId"],
+            "cacheInterruptTime": 1200
+        },
+        {
+            "label": "Sleep for 100 seconds",
+            "customStep": "sleepForSeconds",            
+            "sleepTimeInSeconds": 100
+        }
+    ],
+    "detachStorageForCancel": [
+        {
+            "label": "Execute 'Detach Storage' when cancel subscription",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/detachStorageForCancelUrl.ftl",
+            "method": "DELETE"
+        }
+    ],
+    "cancel": [
+        {
+            "label": "Load Order Info",
+            "customStep": "loadOrderInfo"
+        },
+        {
+            "label": "Add authDataCenter property for authentication",
+            "resultTemplate": "getAuthInfoFromOrderInfo.ftl"
+        },
+        {
+            "label": "Get Server Detail if missing",
+            "requestUrlTemplate": "service-instance/getServerDetailIfMissingUrl.ftl",
+            "responseTemplate": "service-instance/getServerDetailIfMissingResponseForCancelServer.ftl",
+            "method": "GET"
+        },
+        {
+        	"label": "Get Server with Tags",
+        	"resultTemplate": "service-instance/getServerInfoWithTags.ftl"
+        },
+        {
+            "label": "Transform EVA Volumes",
+            "customStep": "evaVolumesForCancel"
+        },
+        {
+        	"label": "Handle If Physical server with EVA storage",
+        	"resultTemplate": "service-instance/cancelIfServerWithEVAStorage.ftl"
+        },
+        {
+            "label": "Get attached volumes before delete Server",
+            "requestUrlTemplate": "service-instance/getAttachedVolumesUrl.ftl",
+            "responseTemplate": "service-instance/getAttachedVolumesResponse.ftl",
+            "method": "GET"
+        },
+       	{
+            "label": "Delete Server",
+            "requestUrlTemplate": "cancel-subscription/cancelSubscriptionUrl.ftl",
+            "ignoreResponse": true,
+            "method": "DELETE"
+        },
+        {
+        	"label": "Store the server id",
+        	"customStep": "storeDeleteInProgressServerInfo"
+        },
+        {
+            "label": "Delete Storage",
+            "requestUrlTemplate": "cancel-subscription/cancelStorageSubscriptionUrl.ftl",
+            "ignoreResponse": true,
+            "method": "DELETE"
+        },
+        {
+            "label": "Temporary Interrupt Caching",
+            "customStep": "temporaryInterruptCaching",
+            "forEntities":["orderInfo.id"],
+            "cacheInterruptTime": 1200
+        },
+        {
+            "label": "Cancel purchase order",
+            "customStep": "cancelPurchaseOrder"
+        }
+    ],
+    "cancelStorageOrder" : [
+        {
+            "label": "Cancel purchase order",
+            "customStep": "cancelPurchaseOrder"
+        }
+    ],
+    "translateCustomer": [
+        {
+            "label": "Cache results",
+            "resultCacheExpiration": 600,
+            "resultCacheIncludeInputPaths": [
+                "messageHeader.backendSystemType",
+                "messageHeader.targetInstance"
+            ]
+        },
+        {
+            "label": "Translate customer id/uuid",
+            "requestUrlTemplate": "validation/getCustomersUrl.ftl",
+            "responseTemplate": "validation/getCustomersResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "validateCart": [        
+        {
+            "label": "Prepare validation result",
+            "resultTemplate": "validation/prepareValidationResult.ftl"
+        }
+    ],
+    "getUpdatedServersInOneDC":[
+        {
+            "label": "Get Updated Servers",
+            "requestUrlTemplate": "order/getUpdatedServersUrl.ftl",
+            "responseTemplate": "order/getUpdatedServersResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getVirtualVolumeTypeById": [
+        {
+            "label": "Get Volume Type Nme By ID",
+            "requestUrlTemplate": "service-instance/getVirtualVolumeTypeByIdUrl.ftl",
+            "responseTemplate": "service-instance/getVolumeTypeResponse.ftl",
+            "method": "GET",
+            "keepResultOnly": true
+        }
+    ],
+    "mountAttachedStorageVolume" : [
+        {
+            "label": "mount a Block Storage Volume",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/mountAttachedStorageVolumeUrl.ftl",
+            "requestTemplate": "service-instance/mountAttachedStorageVolumeRequest.ftl",
+            "ignoreResponse": true,
+            "method": "PUT",
+            "reportSuccessForHttpStatuses": [200]
+        }
+    ],
+    "unmountAttachedStorageVolume" : [
+        {
+            "label": "Unmount a Block Storage Volume",
+            "requestHeaderTemplate":"requestHeaderTemplate.ftl",
+            "requestUrlTemplate": "service-instance/unmountAttachedStorageVolumeUrl.ftl",
+            "requestTemplate": "service-instance/unmountAttachedStorageVolumeRequest.ftl",
+            "ignoreResponse": true,
+            "method": "PUT",
+            "reportSuccessForHttpStatuses": [200]
+        }
+    ],
+    "getFlexVirtualStorageTier": [
+        {
+            "label": "Get Flex Size Performance Storage - Virtual Server",
+            "requestUrlTemplate": "service-instance/getStorageTierUrl.ftl",
+            "responseTemplate": "service-instance/getFlexVirtualStorageTierResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getImageDisplayName": [
+        {
+            "label": "Get Image Display Name with Image Id",
+            "requestUrlTemplate": "aggregation/getImageDisplayNameUrl.ftl",
+            "responseTemplate": "aggregation/getImageDisplayNameResponse.ftl",
+            "method": "GET"
+        }
+    ],
+    "getPhysicalServerHardWareForServiceInstance": [
+    	{
+            "label": "Get VMSize Option Values in Service Instance",
+            "requestUrlTemplate": "aggregation/getPhysicalServerHardwareUrl.ftl",
+            "requestTemplate": "aggregation/getPhysicalServerHardwareForServiceInstanceRequest.ftl",
+            "responseTemplate": "aggregation/getPhysicalServerHardwareForServiceInstanceResponse.ftl",
+            "method": "POST"
+        }
+    ],
+    "getHyperVVirtualMachineCPU": [
+    	{
+            "label": "Get Hyper-V Virtual Machine Flavor List For CPU",
+            "requestUrlTemplate": "aggregation/getHyperVVirtualMachineFlavorsUrl.ftl",
+            "responseTemplate": "aggregation/getHyperVVirtualMachineFlavorsResponse.ftl",
+            "method": "GET"
+        },
+    	{
+            "label": "Get Offering HyperV Virtual Machine Size For CPU",
+            "requestUrlTemplate": "aggregation/getMachineSizeOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getHyperVVirutalMachineSizeOptionValuesRequest.ftl",
+            "responseTemplate": "aggregation/getHyperVVirutalMachineSizeOptionValuesResponse.ftl",
+            "method": "POST"
+        }    	
+    ],
+    "getHyperVVirtualMachineMemory": [
+    	{
+            "label": "Get Hyper-V Virtual Machine Flavor List For Memory",
+            "requestUrlTemplate": "aggregation/getHyperVVirtualMachineFlavorsForMemoryUrl.ftl",
+            "responseTemplate": "aggregation/getHyperVVirtualMachineFlavorsResponse.ftl",
+            "method": "GET"
+        },
+    	{
+            "label": "Get Offering HyperV Virtual Machine Size For Memory",
+            "requestUrlTemplate": "aggregation/getMachineSizeOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getHyperVVirutalMachineSizeOptionValuesForMemoryRequest.ftl",
+            "responseTemplate": "aggregation/getHyperVVirutalMachineSizeOptionValuesForMemoryResponse.ftl",
+            "method": "POST"
+        }    	
+    ],
+    "getHyperVVirtualMachineImage": [
+    	{
+            "label": "Get Hyper-V Virtual Machine Flavor For Image",
+            "requestUrlTemplate": "aggregation/getHyperVVirtualMachineImageUrl.ftl",
+            "responseTemplate": "aggregation/getHyperVVirtualMachineCompatibleImagesResponse.ftl",
+            "method": "GET"
+        },
+    	{
+            "label": "Get Offering Hyper-V Virtual Machine Size For Image",
+            "requestUrlTemplate": "aggregation/getHyperVVirtualMachineImageOptionValuesUrl.ftl",
+            "requestTemplate": "aggregation/getHyperVVirutalMachineImageOptionValuesRequest.ftl",
+            "responseTemplate": "aggregation/getHyperVVirutalMachineImageOptionValuesResponse.ftl",
+            "method": "POST"
+        }    	
+    ],
+    "getVolumeManagerValues":[
+        {
+            "label": "Get Linux Volume Manager Option Values",
+            "resultTemplate": "service-instance/getVolumeManagerOptionValuesResult.ftl"
+        }
+    ],
+    "getServerMountPoints" : [  
+    	{
+            "label": "Get Server Volume Attachments",            
+            "requestUrlTemplate": "service-instance/getServerAttachmentsUrl.ftl",  
+            "responseTemplate" :  "service-instance/getServerAttachmentsResult.ftl",          
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,204,500]
+        },  
+        {
+            "label": "Get Server Physical Volumes",
+            "requestUrlTemplate": "service-instance/getServerPhysicalVolumeOptionValuesUrl.ftl",
+            "responseTemplate" :  "service-instance/getServerPhysicalVolumesResult.ftl",             
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,204,500]
+        },
+        {
+            "label": "Get Server Logical Volumes",
+            "requestUrlTemplate": "service-instance/getServerLogicalVolumesUrl.ftl",  
+            "responseTemplate":   "service-instance/getServerLogicalVolumesResult.ftl",          
+            "method": "GET",
+            "reportSuccessForHttpStatuses": [200,204,500]
+        },
+        {
+            "label": "Select Server Mount Points",
+            "resultTemplate": "service-instance/getServerMountpointOptionsResult.ftl"            
+        }
+    ]
+}

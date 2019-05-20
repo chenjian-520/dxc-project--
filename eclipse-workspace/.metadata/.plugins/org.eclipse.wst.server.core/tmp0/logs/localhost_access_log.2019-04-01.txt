@@ -1,0 +1,13 @@
+127.0.0.1 - - [01/Apr/2019:10:06:29 +0800] "GET / HTTP/1.1" 404 1074
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:06:31 +0800] "GET /homework9/index.jsp HTTP/1.1" 200 541
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:06:42 +0800] "POST /homework9/ServletWork HTTP/1.1" 302 -
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:06:42 +0800] "GET /homework9/close.html HTTP/1.1" 200 314
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:06:43 +0800] "GET /homework9/index.jsp HTTP/1.1" 200 541
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:32 +0800] "POST /homework9/ServletWork HTTP/1.1" 302 -
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:32 +0800] "GET /homework9/close.html HTTP/1.1" 200 314
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:35 +0800] "GET /homework9/index.jsp HTTP/1.1" 200 541
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:41 +0800] "POST /homework9/ServletWork HTTP/1.1" 302 -
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:41 +0800] "GET /homework9/close.html HTTP/1.1" 200 314
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:51 +0800] "GET /homework9/index.jsp HTTP/1.1" 200 541
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:56 +0800] "POST /homework9/ServletWork HTTP/1.1" 302 -
+0:0:0:0:0:0:0:1 - - [01/Apr/2019:10:21:57 +0800] "GET /homework9/welcome.html HTTP/1.1" 200 227

@@ -1,0 +1,104 @@
+<#-- @ftlvariable name="doc" type="java.util.Map" -->
+<#-- @ftlvariable name="message" type="java.util.Map" -->
+
+<#if (message.orderInfo.entityType)?? && message.orderInfo.entityType?trim?lower_case=="server">
+
+<#assign ORDER_STATE_MAPPING =
+    {
+        "UNKNOWN" : "in_progress",
+        "BUILD" : "in_progress",
+        "LAPSED" : "in_progress", 
+        "ACTIVE" : "completed",
+        "ERROR" : "failed",
+        "DELETE_IN_PROGRESS" : "completed",
+        "DELETE IN PROGRESS" : "completed",
+        "DELETED" : "completed"
+    }
+/>
+
+<#assign SUB_STATE_MAPPING =
+    {
+        "UNKNOWN" : "pending",
+        "BUILD" : "pending",
+        "LAPSED" : "pending", 
+        "ACTIVE" : "active",
+        "ERROR" : "terminated",
+        "DELETE_IN_PROGRESS" : "cancelling",
+        "DELETE IN PROGRESS" : "cancelling",
+        "DELETED" : "cancelled"
+    }
+/>
+
+<#assign serverStatus = (message.fullEntity.status)!"DELETED" />
+<#assign orderState = ORDER_STATE_MAPPING[serverStatus] />
+<#assign subState = SUB_STATE_MAPPING[serverStatus] />
+
+<#escape x as x?json_string>
+{
+    "orderInfo": {
+        "state": "${orderState}",
+        "subscription": {
+            "state": "${subState}"
+            <#if (message.fullEntity.created)??>
+                , "startDate": "${message.fullEntity.created}"
+            </#if>
+            <#if serverStatus == "DELETED">
+                , "serviceInstanceId": null
+            </#if>
+        }
+    }
+}
+</#escape>
+
+<#elseif (message.orderInfo.entityType)?? && message.orderInfo.entityType?trim?lower_case=="storage">
+
+<#assign ORDER_VOLUME_STATE_MAPPING =
+    {
+        "CREATE" : "submitted",
+        "CREATING" : "in_progress",
+        "AVAILABLE" : "completed",
+        "ACTIVE" : "completed",
+        "GROWING" : "completed",
+        "GROW" : "completed",
+        "DELETE" : "completed",
+        "DELETING" : "completed",
+        "DELETED" : "completed",
+        "ERROR" : "failed",
+        "UNKNOWN" : "submitted"
+    }
+/>
+
+<#assign SUB_VOLUME_STATE_MAPPING =
+    {
+        "CREATE" : "pending",
+        "CREATING" : "pending",
+        "AVAILABLE" : "active",
+        "ACTIVE" : "active",
+        "GROWING" : "active",
+        "GROW" : "active",
+        "DELETE" : "active",
+        "DELETING" : "active",
+        "DELETED" : "cancelled",
+        "ERROR" : "terminated",
+        "UNKNOWN" : "submitted"
+    }
+/>
+
+<#assign orderState = ORDER_VOLUME_STATE_MAPPING[message.fullEntity.status] />
+<#assign subState = SUB_VOLUME_STATE_MAPPING[message.fullEntity.status] />
+
+<#escape x as x?json_string>
+{
+    "orderInfo": {
+        "state": "${orderState}",
+        "subscription": {
+            "state": "${subState}"
+            <#if (message.fullEntity.created_at)??>
+            ,"startDate": "${message.fullEntity.created_at}"
+            </#if>
+        }
+    }
+}
+</#escape>
+
+</#if>

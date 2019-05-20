@@ -1,0 +1,13 @@
+package com.cn.hpe.homework4;
+
+import java.io.File;
+import java.io.FileInputStream;
+
+public class InputStreamText {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		FileInputStream filr = new FileInputStream(new File("C:\\chenjian\\baidu\\password.txt"));
+	}
+
+}

@@ -1,0 +1,25 @@
+1552271686055	Move 'close.html' to 'webapp'
+1552271806068	Rename resource 'close.html'
+1552271814651	Rename resource 'welcome.html'
+1552272685390	Move 'welcome.jsp' to 'jsp'
+1552272686838	Move 'index.jsp' to 'jsp'
+1552272687908	Move 'close.jsp' to 'jsp'
+1552280755494	Move 'servlet.xml' to 'WEB-INF'
+1552280811447	Move 'applicationContext.xml' to 'WEB-INF'
+1552280956108	Move 'applicationContext.xml' to 'resources'
+1552281285623	Move 'servlet.xml' to 'resources'
+1552284094892	Copy file
+1552284097441	Copy file
+1552285397283	Copy file
+1552286570466	Copy package
+1552286579256	Copy package
+1552286720083	Copy file
+1552289448220	Move file
+1552289456358	Move file
+1552289463935	Delete element
+1552289465550	Move file
+1552289468424	Delete element
+1552289488412	Move file
+1552290723450	Copy file
+1552382558901	Delete element
+1552382679019	Delete element

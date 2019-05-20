@@ -1,0 +1,55 @@
+<#-- @ftlvariable name="message" type="java.util.Map" -->
+<#-- @ftlvariable name="doc" type="java.util.Map" -->
+<#-- @ftlvariable name="uuidgen" type="com.hp.ccue.serviceExchange.adapter.freemarker.UuidGen" -->
+
+<#-- <#include "../vpcFlavorUtil.ftl"> -->
+<#include "../vpc/flavor/physicalServerFlavorsUtil.ftl" />
+
+<#escape x as x?json_string>
+{
+    "osCluster": {
+        "name": "${message.propertyMap["v2OSClusterName"]}",        
+		"dualDC": ${message.propertyMap["mpcOsClusterSpanBoth"]},
+		"imageRef": "${message.propertyMap["mpcImage"]}",        
+        "vlan" : "${message.propertyMap["mpcVlan"]}",
+        "servers": [
+            <#if (message.propertyMap["mpcItemInPrimary"])??>
+                <#assign first = true />
+                <#assign serverIndex=1/>
+                <#list message.propertyMap["mpcItemInPrimary"] as server>
+					<#if !first>,</#if>
+					<#assign first = false />
+					<#assign serverRef = server?split(":")[0]>
+					<#assign selectedFlavorId = serverRef>
+					<#if serverRef?contains("---")>	
+						<#assign flavorIds = serverRef?split("---")>
+						<#assign selectedFlavorId = mpcFlavorsUtilsSelectFlavorIdWithImageId(flavorIds, message.propertyMap["mpcImage"]) />			
+					</#if>
+		            {
+		                "name": "${message.propertyMap["v2OSClusterName"]}${serverIndex?string('000')}",
+		                "flavorRef": "${selectedFlavorId}"
+		            }
+		            <#assign serverIndex=serverIndex+1/>
+			    </#list>
+			    <#if (message.propertyMap["mpcItemInSecondary"])??>
+	                <#list message.propertyMap["mpcItemInSecondary"] as server>
+						<#if !first>,</#if>
+						<#assign first = false />
+						<#assign serverRef = server?split(":")[0]>
+						<#assign selectedFlavorId = serverRef>
+						<#if serverRef?contains("---")>	
+							<#assign flavorIds = serverRef?split("---")>
+							<#assign selectedFlavorId = mpcFlavorsUtilsSelectFlavorIdWithImageId(flavorIds, message.propertyMap["mpcImage"]) />			
+						</#if>
+			            {
+			                "name": "${message.propertyMap["v2OSClusterName"]}${serverIndex?string('000')}",
+			                "flavorRef": "${selectedFlavorId}"
+			            }
+			            <#assign serverIndex=serverIndex+1/>
+				    </#list>
+			    </#if>
+			</#if>
+        ]
+    }
+}
+</#escape>

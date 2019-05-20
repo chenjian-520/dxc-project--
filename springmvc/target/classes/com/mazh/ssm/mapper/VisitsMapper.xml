@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mazh.ssm.mapper.VisitsMapper">
+    <!-- 查询所有记录， 返回的是一个List<Student> -->
+    <select id="getAllVisits" resultType="Visits">
+		select * from visits
+	</select>
+
+    <select id="getAllVisitsWhere" resultType="Visits" parameterType="Visits">
+        select * from visits
+        <where>
+            <include refid="selectVisitsWhere"></include>
+        </where>
+    </select>
+
+    <sql id="selectVisitsWhere">
+        <if test="session != null and session != ''">
+            and session = #{session}
+        </if>
+        <if test="remote_addr != null and remote_addr != ''">
+            and remote_addr = #{remote_addr}
+        </if>
+        <if test="inTime != null and inTime != ''">
+            and inTime = #{inTime}
+        </if>
+        <if test="outTime != null and outTime != ''">
+            and outTime = #{outTime}
+        </if>
+        <if test="inPage != null and inPage != ''">
+            and inPage = #{inPage}
+        </if>
+        <if test="outPage != null and outPage != ''">
+            and outPage = #{outPage}
+        </if>
+        <if test="referal != null and referal != ''">
+            and referal = #{referal}
+        </if>
+        <if test="pageVisits != 0 ">
+            and pageVisits = #{pageVisits}
+        </if>
+    </sql>
+
+    <!-- 查询一个学生 -->
+    <select id="getOneVisits" parameterType="String" resultType="Visits">
+		select * from visits where session = #{session}
+	</select>
+
+    <!-- 插入一个学生记录 -->
+    <insert id="insertVisits" parameterType="Visits">
+		insert into visits
+		(session, remote_addr, inTime, outTime,inPage,outPage,referal,pageVisits)
+		 values (#{session}, #{remote_addr}, #{inTime},#{outTime},#{inPage},#{outPage},#{referal},#{pageVisits})
+	</insert>
+
+    <!-- 修改一个学生记录 -->
+    <update id="updateVisits" parameterType="Visits">
+		update visits set session
+		= #{session}, remote_addr = #{remote_addr}, inTime = #{inTime}, outTime = #{outTime}
+		, inPage = #{inPage}, outPage = #{outPage}, referal = #{referal}, pageVisits = #{pageVisits}
+		where session = #{session}
+	</update>
+
+    <!-- 删除一个学生记录 -->
+    <delete id="deleteVisits" parameterType="String">
+		delete from visits
+		where session = #{session}
+	</delete>
+</mapper>
